@@ -1,0 +1,15 @@
+**Log on to codeastro.com for more projects!***
+
+**Database Name: invoicemgsys**
+
+**Developed by SamSnow email: steclezion@gmail.com**
+
+**Recommended PHP Version 7.4 or and FPDF 1.7 Newer**
+
+
+**Login Details**
+
+Username: steclezion
+Password: 12345678@
+
+
