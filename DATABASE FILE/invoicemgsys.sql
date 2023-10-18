@@ -10553,7 +10553,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `phone`, `password`, `user_permission`, `user_type`, `check_activity`) VALUES
-(1, 'Dr.Bereket', 'admin', 'admin@codeastro.com', '7896541250', 'd00f5d5217896fb7fd601412cb890830', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21', 'Admin', 1),
+(1, 'Dr.Bereket', 'admin', 'steclezion@gmail.com', '+211980253474', 'd00f5d5217896fb7fd601412cb890830', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21', 'Admin', 1),
 (2, 'Girmawi Amine', 'Girmawi', 'mekanehiwotmedical@gmail.com', '0980983371', '25d55ad283aa400af464c76d713c07ad', '1,,,,,,,,,,,,,,,,,,,,', 'Labaratory', 1),
 (3, 'JUDDY', 'juddy', 'mekanehiwotmedical@gmail.com', '092134311', '2e9ec317e197819358fbc43afca7d837', '1,2,3,4,5,6,7,8,9,10,,,,,,,17,18,19,,', 'Cashier', 1),
 (4, 'Joanie', 'joan', 'mekanehiwotmedical@gmail.com', '0928724685', '25f9e794323b453885f5181f1b624d0b', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21', 'Cashier', 1);
