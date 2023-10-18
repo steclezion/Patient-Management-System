@@ -3,7 +3,17 @@
 include('header.php');
 include('functions.php');
 
-?>
+$user_permission = array(); 
+
+$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+for($i =0; $i <= count($explode_comma_separated); $i++)
+{
+@array_push($user_permission,$explode_comma_separated[$i]);
+}
+
+if ((in_array('5', $user_permission))) {
+
+    ?>
 
 <h2>Create New <span class="invoice_type">Invoice</span> </h2>
 <!-- <hr> -->
@@ -27,9 +37,9 @@ include('functions.php');
 				</div>
 				<div class="col-xs-3">
 					<select name="invoice_type" id="invoice_type" class="form-control">
-						<option value="invoice" selected>Invoice</option>
+						<option value="invoice" >Invoice</option>
 						<option value="quote">Quote</option>
-						<option value="receipt">Receipt</option>
+						<option value="receipt" selected >Receipt</option>
 					</select>
 				</div>
 				<div class="col-xs-3">
@@ -48,7 +58,7 @@ include('functions.php');
 						<label class="input-group-addon"> Invoice Date </label>
 						<input width="100" value="<?php echo $dt->format('d-m-Y');  ?>" readonly type="text"
 							class="form-control required" name="invoice_date"
-							placeholder="<?php //echo $dt->format('Y-m-d');  ?>"
+							placeholder="<?php echo $dt->format('Y-m-d');  ?>"
 							data-date-format="<?php echo DATE_FORMAT ?>" />
 						<span class="input-group-addon">
 							<span class="glyphicon glyphicon-calendar"></span>
@@ -62,7 +72,7 @@ include('functions.php');
 						<label class="input-group-addon"> Due Date </label>
 						<input width="50"  value="<?php echo $dt->format('d-m-Y');  ?>" readonly type="text"
 							class="form-control required" name="invoice_due_date"
-							placeholder="<?php //echo $dt->format('Y-m-d');  ?>"
+							placeholder="<?php echo $dt->format('Y-m-d');  ?>"
 							data-date-format="<?php echo DATE_FORMAT ?>" />
 						<span class="input-group-addon">
 							<span class="glyphicon glyphicon-calendar"></span>
@@ -189,7 +199,7 @@ include('functions.php');
 				<td class="text-right">
 					<div class="form-group form-group-sm no-margin-bottom">
 						<input type="number" class="form-control invoice_product_qty calculate"
-							name="invoice_product_qty[]" value="1"/>
+							name="invoice_product_qty[]" value="1" min="0"/>
 					</div>
 				</td>
 				<td class="text-right">
@@ -198,12 +208,12 @@ include('functions.php');
 							<?php echo CURRENCY ?> &nbsp;
 						</span>
 						<input readonly type="number" class="form-control calculate invoice_product_price required"
-							name="invoice_product_price[]" aria-describedby="sizing-addon1" placeholder="0.00"/>
+							name="invoice_product_price[]"  min="0" aria-describedby="sizing-addon1" placeholder="0.00"/>
 					</div>
 				</td>
 				<td class="text-right">
 					<div  class="form-group form-group-sm  no-margin-bottom" title="Enter % OR value (ex: 10% or 10.50)">
-						<input value="0" <?php echo DISCOUNT;?> type="text" title="Enter % OR value (ex: 10% or 10.50)" class="form-control calculate invoice_product_discount" 
+						<input  min="0" value="0" <?php echo DISCOUNT;?> type="text" title="Enter % OR value (ex: 10% or 10.50)" class="form-control calculate invoice_product_discount" 
 							name="invoice_product_discount[]" placeholder="Enter % OR value (ex: 10% or 10.50)"/>
 					</div>
 				</td>
@@ -213,7 +223,7 @@ include('functions.php');
 							<?php echo CURRENCY ?> &nbsp;
 						</span>
 						<input type="text" class="form-control calculate-sub calculate invoice_product_sub" name="invoice_product_sub[]"
-							 value="0.00" aria-describedby="sizing-addon1" disabled>
+						min="0"  value="0.00" aria-describedby="sizing-addon1" disabled>
 					</div>
 				</td>
 			</tr>
@@ -260,7 +270,7 @@ include('functions.php');
 							<?php echo CURRENCY ?> &nbsp;
 						</span>
 						<input type="text" class="form-control calculate servicecharge" name="servicecharge"
-							aria-describedby="sizing-addon1" placeholder="0.01" value="0.01">
+							aria-describedby="sizing-addon1" placeholder="0.00" value="0.00">
 					</div>
 				</div>
 			</div>
@@ -305,6 +315,8 @@ include('functions.php');
 	</div>
 </form>
 
+
+
 <div id="insert" class="modal fade">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -324,8 +336,13 @@ include('functions.php');
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<!-- popProductsList();  popCustomersList();  --> 
+
+
+
+
 <div id="insert_customer" class="modal fade">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -342,6 +359,20 @@ include('functions.php');
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+
 <?php
-	include('footer.php');
+    include('footer.php');
+}
+else
+{
+
+  echo "
+  <script>
+      setTimeout(function() {
+          window.location = 'authentication_error_page.php';
+      }, 1);
+  </script>
+";
+
+}
 ?>

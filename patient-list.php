@@ -4,6 +4,16 @@
 include('header.php');
 include('functions.php');
 
+$user_permission = array(); 
+$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+
+for($i =0; $i <= count($explode_comma_separated); $i++)
+{
+@array_push($user_permission,$explode_comma_separated[$i]);
+}
+
+if ((in_array('9', $user_permission))) {
+
 ?>
 
 <h1>Patient's List</h1>
@@ -47,5 +57,17 @@ include('functions.php');
 </div><!-- /.modal -->
 
 <?php
-	include('footer.php');
-?>
+    include('footer.php');
+}
+else
+{
+
+  echo "
+  <script>
+      setTimeout(function() {
+          window.location = 'authentication_error_page.php';
+      }, 1);
+  </script>
+";
+
+}

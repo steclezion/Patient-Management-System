@@ -50,7 +50,11 @@ class invoicr extends FPDF_rotation
 		$this->setDocumentSize($size);
 		$this->setColor("#222222");
 		
-		$this->FPDF('P','mm',array($this->document['w'],$this->document['h']));
+		//$this->FPDF('P','mm',array($this->document['w'],$this->document['h']));
+		
+        parent::__construct('P','mm',array($this->document['w'],$this->document['h']));
+
+
 		$this->AliasNbPages();
 		$this->SetMargins($this->margins['l'],$this->margins['t'],$this->margins['r']);
 	}
@@ -340,14 +344,14 @@ class invoicr extends FPDF_rotation
 		if($this->items) {
 			foreach($this->items as $item) 
 			{
-				if($item['description']) 
+				if(addslashes($item['description'])) 
 				{
 					//Precalculate height
 					$calculateHeight = new invoicr;
 					$calculateHeight->addPage();
 					$calculateHeight->setXY(0,0);
 					$calculateHeight->SetFont($this->font,'',7);	
-					$calculateHeight->MultiCell($this->firstColumnWidth,3,iconv("UTF-8", "ISO-8859-1",$item['description']),0,'L',1);
+					$calculateHeight->MultiCell($this->firstColumnWidth,3,iconv("UTF-8", "ISO-8859-1",addslashes($item['description'])),0,'L',1);
 					$descriptionHeight = $calculateHeight->getY()+$cellHeight+2;
 					$pageHeight = $this->document['h']-$this->GetY()-$this->margins['t']-$this->margins['t'];
 					if($pageHeight<0) 
@@ -361,15 +365,15 @@ class invoicr extends FPDF_rotation
 				$this->SetFillColor($bgcolor,$bgcolor,$bgcolor);
 				$this->Cell(1,$cHeight,'',0,0,'L',1);
 				$x = $this->GetX();
-				$this->Cell($this->firstColumnWidth,$cHeight,iconv("UTF-8", "ISO-8859-1",$item['item']),0,0,'L',1);
-				if($item['description'])
+				@$this->Cell($this->firstColumnWidth,$cHeight,iconv("UTF-8", "ISO-8859-1",  addslashes($item['item']))  ,0,0,'L',1);
+				if(addslashes($item['description']))
 				{
 					$resetX = $this->GetX();
 					$resetY = $this->GetY();
 					$this->SetTextColor(120,120,120);
 					$this->SetXY($x,$this->GetY()+8);
 					$this->SetFont($this->font,'',7);			
-					$this->MultiCell($this->firstColumnWidth,3,iconv("UTF-8", "ISO-8859-1",$item['description']),0,'L',1);
+					$this->MultiCell($this->firstColumnWidth,3,iconv("UTF-8", "ISO-8859-1",addslashes($item['description'])),0,'L',1);
 					//Calculate Height
 					$newY = $this->GetY();
 					$cHeight = $newY-$resetY+2;
@@ -388,13 +392,13 @@ class invoicr extends FPDF_rotation
 				//$this->Cell($this->columnSpacing,$cHeight,'',0,0,'L',0);
 				//$this->Cell($width_other,$cHeight,iconv('UTF-8', 'windows-1252', $item['vat']),0,0,'C',1);
 				$this->Cell($this->columnSpacing,$cHeight,'',0,0,'L',0);
-				$this->Cell($width_other,$cHeight,iconv('UTF-8', 'windows-1252', $this->currency.' '.number_format($item['price'],2,$this->referenceformat[0],$this->referenceformat[1])),0,0,'C',1);
+				$this->Cell($width_other,$cHeight,iconv('UTF-8', 'windows-1252', $this->currency.' '.number_format(addslashes($item['price']),2,$this->referenceformat[0],$this->referenceformat[1])),0,0,'C',1);
 				if(isset($this->discountField)) 
 				{
 					$this->Cell($this->columnSpacing,$cHeight,'',0,0,'L',0);
-					if(isset($item['discount'])) 
+					if(isset($item['discount']))
 					{
-						$this->Cell($width_other,$cHeight,iconv('UTF-8', 'windows-1252',$item['discount']),0,0,'C',1);
+						$this->Cell($width_other,$cHeight,iconv('UTF-8', 'windows-1252',addslashes($item['discount'])),0,0,'C',1);
 					} 
 					else 
 					{
@@ -462,12 +466,13 @@ class invoicr extends FPDF_rotation
 			$badge = ' '.strtoupper($this->badge).' ';
 			$resetX = $this->getX();
 			$resetY = $this->getY();
-			$this->setXY($badgeX,$badgeY+15);
+			$this->setXY($badgeX,$badgeY+25);
 			$this->SetLineWidth(0.4);
 			$this->SetDrawColor($this->color[0],$this->color[1],$this->color[2]);		
-			$this->setTextColor($this->color[0],$this->color[1],$this->color[2]);
-			$this->SetFont($this->font,'b',15);
-			$this->Rotate(10,$this->getX(),$this->getY());
+			//$this->setTextColor($this->color[0],$this->color[1],$this->color[2]);
+			$this->setTextColor(249,0,0);
+			$this->SetFont($this->font,'b',30);
+			$this->Rotate(15,$this->getX(),$this->getY());
 			$this->Rect($this->GetX(),$this->GetY(),$this->GetStringWidth($badge)+2,10);
 			$this->Write(10,$badge);
 			$this->Rotate(0);

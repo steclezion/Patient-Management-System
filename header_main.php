@@ -7,7 +7,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Invoice Manager</title>
+	<title>Patient Management System</title>
 
 	<!-- JS -->
 	<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -18,6 +18,10 @@
 	<script src="js/bootstrap.datetime.js"></script>
 	<script src="js/bootstrap.password.js"></script>
 	<script src="js/scripts.js"></script>
+
+	
+
+
 	
 	<!-- AdminLTE App -->
 	<script src="dist/js/app.min.js"></script>
@@ -49,6 +53,18 @@
 				<li><a href="#" class="download-csv">Download CSV</a></li>
 		  	</ul>
 		</div>
+
+
+
+		<div class="top-buttons btn-group">
+			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Labratory Request <span class="caret"></span></button>
+		  	<ul class="dropdown-menu" role="menu">	
+		  		<li><a href="invoice-create.php">Labratory</a></li>	    
+				<li><a href="invoice-list.php">Manage Labaratory</a></li>
+				<li><a href="#" class="download-csv">Download CSV</a></li>
+		  	</ul>
+		</div>
+
 
 		<div class="top-buttons btn-group">
 			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Items <span class="caret"></span></button>

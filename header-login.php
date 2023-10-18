@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Invoice Management System</title>
+	<title>Patient Management System</title>
 
 	<!-- JS -->
 	<script src="js/jquery-1.11.0.min.js"></script>
@@ -20,6 +20,14 @@
 	<link rel="stylesheet" href="css/jquery.dataTables.css">
 	<link rel="stylesheet" href="css/dataTables.bootstrap.css">
 	<link rel="stylesheet" href="css/styles.css">
+	    <!-- Select2 -->
+  
+		<link rel="stylesheet" href="css/select2.min.css">
+  <link rel="stylesheet" href="css/select2-bootstrap4.min.css">
+
+    <!-- Select2 -->
+<script src="js/select2.full.min.js"></script>
+	
 
 	<style>
 		/*@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);*/ 

@@ -103,6 +103,9 @@ input.shipping {
 #invoice_status,
 #invoice_type {
   margin-top: 23px;
+  border-color:red;
+  background-color:red;
+
 }
 
 .invoice_product_qty {

@@ -8,20 +8,30 @@ define('DATABASE_NAME', 'invoicemgsys');
 define('DATABASE_USER', 'root');
 define('DATABASE_PASS', '');
 
+date_default_timezone_set("Africa/Juba");
+$today = date("d-m-Y H:i:s");
+
+
 // COMPANY INFORMATION
-define('COMPANY_LOGO', 'images/logo.png');
+define('COMPANY_LOGO', 'images/Picture3.png');
 define('COMPANY_LOGO_WIDTH', '300');
 define('COMPANY_LOGO_HEIGHT', '90');
 define('COMPANY_NAME','MEKANE HIWOT INVOICE');
 define('COMPANY_ADDRESS_1','Mahta-Yie, Juba-South Sudan');
 define('COMPANY_ADDRESS_2','Neemra Talata, Near MCC Building');
 define('COMPANY_ADDRESS_3','kush');
-define('COMPANY_COUNTY','SS');
-define('COMPANY_POSTCODE','10100');
+define('COMPANY_COUNTY','Juba, South Sudan');
+define('COMPANY_POSTCODE',' ');
+define('COMPANY_SIZE_PAPER','A4');
+define('COMPANY_Header','<img src="images/Picture3.png" width="100%" height="100px"/>');
 
+//define('COMPANY_Footer','<img src="images/Picture3.png" width="100%" height="100px"/>');
+//define('COMPANY_Footer','<img src="images/Picture3.png" width="100%" height="100px"/>'.$today." ".COMPANY_NAME." ".COMPANY_ADDRESS_1." ".COMPANY_COUNTY);
+
+define('COMPANY_Footer',$today." ".COMPANY_NAME." ".COMPANY_ADDRESS_1." ".COMPANY_COUNTY);
 define('COMPANY_NUMBER','Company No: +211(0)923341686'); // Company registration number
-
 define('COMPANY_NUMBER2', 'Company No2: +211(0)917787911'); // Company TAX/VAT number
+
 
 // EMAIL DETAILS
 define('EMAIL_FROM', 'sales@inms.ccc'); // Email address invoice emails will be sent from
@@ -43,14 +53,21 @@ define('ENABLE_VAT', false); // Enable TAX/VAT
 define('VAT_INCLUDED', false); // Is VAT included or excluded?
 define('VAT_RATE', '10'); // This is the percentage value
 
+
 define('PAYMENT_DETAILS', 'Mekane-Hiwot Invoice Mg System.<br>Location: Mahta-Yei<br>email:mekae_hiwot_123@gmail.com'); // Payment information
-define('FOOTER_NOTE', 'Mekane Hiwot Invoice Management System');
+
+define('FOOTER_NOTE', 'Mekane Hiwot Patient Management System');
+
+
+
+
 
 // CONNECT TO THE DATABASE
 $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
 
 
 
+ 
 
 $servername = "localhost";
 $username = "root";

@@ -14553,7 +14553,7 @@
 	
 					cell
 						.removeClass( classes.sSortAsc +" "+classes.sSortDesc )
-						.addClass( columns[ colIdx ] == 'asc' ?
+						.addClass( columns[ colIdx ] == 'desc' ?
 							classes.sSortAsc : columns[ colIdx ] == 'desc' ?
 								classes.sSortDesc :
 								column.sSortingClass
@@ -14568,7 +14568,7 @@
 							classes.sSortJUIAscAllowed +" "+
 							classes.sSortJUIDescAllowed
 						)
-						.addClass( columns[ colIdx ] == 'asc' ?
+						.addClass( columns[ colIdx ] == 'desc' ?
 							classes.sSortJUIAsc : columns[ colIdx ] == 'desc' ?
 								classes.sSortJUIDesc :
 								column.sSortingClassJUI

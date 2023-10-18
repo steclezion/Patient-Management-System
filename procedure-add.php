@@ -1,6 +1,16 @@
 <?php
 include('header.php');
 
+$user_permission = array(); 
+$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+
+for($i =0; $i <= count($explode_comma_separated); $i++)
+{
+@array_push($user_permission,$explode_comma_separated[$i]);
+}
+
+if ((in_array('5', $user_permission))) {
+
 ?>
 
 <h2>Add Procedure</h2>
@@ -47,5 +57,18 @@ include('header.php');
 <div>
 
 <?php
-	include('footer.php');
+    include('footer.php');
+}
+else
+{
+
+  echo "
+  <script>
+      setTimeout(function() {
+          window.location = 'authentication_error_page.php';
+      }, 1);
+  </script>
+";
+
+}
 ?>
