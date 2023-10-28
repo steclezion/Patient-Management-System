@@ -221,7 +221,11 @@ setInterval(function(){
             <li><a href="invoice-create.php"><i class="fa fa-plus"></i>Create Invoice</a></li>
           <?php } ?>
           <?php  if (in_array('3', $user_permission)) {?> 
-            <li><a href="invoice-list.php"><i class="fa fa-cog"></i>Manage Invoices</a></li>
+            <li><a href="invoice-list.php"><i class="fa fa-money"></i>Manage Invoices</a></li>
+            <?php } ?>
+
+            <?php  if (in_array('3', $user_permission)) {?> 
+            <li><a href="receipts.php.php"><i class="fa fa-cab"></i>Manage Receipts</a></li>
             <?php } ?>
 
             <?php  if (in_array('3', $user_permission)) {?> 
