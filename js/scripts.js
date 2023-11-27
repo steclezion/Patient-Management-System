@@ -24,6 +24,34 @@ $(document).ready(function () {
 	  
 	// Load dataTables
 	$("#data-table").dataTable();
+	// Load dataTables
+	$("#data-table1").dataTable();
+	// Load dataTables
+	$("#data-table2").dataTable();
+	// Load dataTables
+	$("#data-table3").dataTable();
+	// Load dataTables
+	$("#data-table4").dataTable();
+	// Load dataTables
+	$("#data-table5").dataTable();
+	// Load dataTables
+	$("#data-table6").dataTable();
+	// Load dataTables
+	$("#data-table7").dataTable();
+	// Load dataTables
+	$("#data-table8").dataTable();
+	// Load dataTables
+	$("#data-table9").dataTable();
+	// Load dataTables
+	$("#data-table10").dataTable();
+	// Load dataTables
+	$("#data-table11").dataTable();
+	// Load dataTables
+	$("#data-table12").dataTable();
+	// Load dataTables
+	$("#data-table13").dataTable();
+	// Load dataTables
+	$("#data-table14").dataTable();
 
 
 		// Load dataTables
@@ -90,6 +118,24 @@ $(document).ready(function () {
 		});
 	});
 
+	//delete-company
+	
+	$(document).on('click', ".delete-company", function (e) {
+		e.preventDefault();
+
+		var userId = 'action=delete_company&delete=' + $(this).attr('data-company-id'); //build a post data structure
+		var user = $(this);
+
+		$('#delete_company').modal({
+			backdrop: 'static',
+			keyboard: false
+		}).one('click', '#delete', function () {
+			deleteCompany(userId);
+			$(user).closest('tr').remove();
+		});
+	});
+
+
 	// Delete Doctor
 	$(document).on('click', ".delete-doctor", function (e) {
 		e.preventDefault();
@@ -113,6 +159,13 @@ $(document).ready(function () {
 		e.preventDefault();
 		updateCustomer();
 	});
+
+//action_update_company
+$(document).on('click', "#action_update_company", function (e) {
+	e.preventDefault();
+	updateCompany();
+});
+
 
 
 	//Update Doctor
@@ -1167,6 +1220,75 @@ if( renal_status  == 1) {
 	});
 
 
+//action_create_company
+
+	//create A company
+
+	$("#action_create_company").click(function (e) {
+		e.preventDefault();
+		actionCreateCompany();
+	});
+
+
+
+
+	
+	function actionCreateCompany() {
+	
+		function company_list_page() {
+			window.location = "company_list.php ";
+		}
+
+		var errorCounter = validateForm();
+
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			var $btn = $("#action_create_doctor").button("loading");
+
+			$(".required").parent().removeClass("has-error");
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#create_company").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+					$("#create_company").before().html("<a href='./company_add.php' class='btn btn-primary'>Add New Company</a>");
+					setInterval(company_list_page, 2500);
+					$("#create_company").remove();
+					$btn.button("reset");
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+
+
+
+
+	}
+	
+
 
 
 
@@ -1178,7 +1300,7 @@ if( renal_status  == 1) {
 		actionCreateDoctor();
 	});
 
-	
+
 	//submit_lab_requeste_to_test_renal
 	$("#submit_lab_requeste_to_test_renal").click(function (e) {
 
@@ -2030,6 +2152,7 @@ $.ajax({
 		var doctor_name = $(this).attr('data-doctor-name');
 		var doctor_title = $(this).attr('data-doctor-title');
 		var doctor_email = $(this).attr('data-doctor-email');
+		var customer_company_name = $(this).attr('data-customer-company_name');
 
 
 		$('#customer_name').val(customer_name);
@@ -2037,10 +2160,12 @@ $.ajax({
 		$('#customer_age').val(customer_age);
 		$('#customer_sex').val(customer_sex);
 		$('#customer_date_of_reg ').val(customer_date_of_reg);
-		$('#doctor_name').val(doctor_name);
+        $('#customer_company_name').val(customer_company_name);
+		
+	 
+	    $('#doctor_name').val(doctor_name);
 		$('#doctor_title').val(doctor_title);
-		$('#doctor_email').val(doctor_email);
-
+        $('#doctor_email').val(doctor_email);
 		$('#insert_customer').modal('hide');
 
 	});
@@ -2422,6 +2547,57 @@ function actionCreateInvoice_from_invoice()
 
 
 
+$(function() { //run on document.ready
+	$("#invoice_type").change(function() { //this occurs when select 1 changes
+		   // Set selected option as variable
+		      // Empty the target field
+   $('#invoice_status').empty();
+		   var selectValue = $(this).val();
+var paid = 'paid';
+var open = 'open';
+var Quote = 'Quote';
+
+		   if(selectValue == 'invoice')
+		   {
+
+			$("#invoice_status").append(
+		
+				"<option value='open'>" + open +  "</option>"+
+				"<option value='paid'>" + paid +  "</option>"
+				
+				);
+		   }
+		   else if( selectValue == 'receipt')
+		   {
+
+			$("#invoice_status").append(
+		
+				"<option value='paid'>" + paid +  "</option>"+
+				"<option value='open'>" + open +  "</option>"
+				
+				);
+		   }
+
+		   else if( selectValue == 'quote')
+		   {
+
+			$("#invoice_status").append(
+		
+				
+				"<option value='quote'>" + Quote +  "</option>"+
+				"<option value='paid'>" + paid +  "</option>"+
+				"<option value='open'>" + open +  "</option>"
+
+				
+				);
+		   }
+
+
+
+
+	});
+  });
+
 
 
 	function actionCreateInvoice() {
@@ -2429,8 +2605,7 @@ function actionCreateInvoice_from_invoice()
 
 
 		var errorCounter = validateForm();
-
-		if (errorCounter > 0) {
+        if (errorCounter > 0) {
 			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
 			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
 			$("html, body").animate({
@@ -2444,8 +2619,8 @@ function actionCreateInvoice_from_invoice()
 			$("#create_invoice").find(':input:disabled').removeAttr('disabled');
 
 
-			function invoice_create() {
-				window.location = "invoice-list.php";
+			function invoice_create(page_link) {
+				window.location =   page_link  ;
 			}
 
 
@@ -2464,7 +2639,13 @@ function actionCreateInvoice_from_invoice()
 						scrollTop: $('#response').offset().top
 					}, 1000);
 
-					setInterval(invoice_create, 2000);
+					//setInterval(invoice_create, 2000); quote receipt invoice
+                 if(data.invoice_type == 'quote ')  {  var invoice_type = 'receipts-list.php'; } 
+				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'receipts-list.php'; } 
+				 else if (data.invoice_type == 'invoice') {  var invoice_type = 'invoice-list.php'; } 
+
+					setInterval( function() { invoice_create(invoice_type); }, 2000 );
+
 
 
 					$("#create_invoice").remove();
@@ -2568,6 +2749,37 @@ function actionCreateInvoice_from_invoice()
 		});
 
 	}
+
+
+
+function deleteCompany(userId){
+	jQuery.ajax({
+
+		url: 'response.php',
+		type: 'POST',
+		data: userId,
+		dataType: 'json',
+		success: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		},
+		error: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		}
+	});
+
+
+}
+
+
+
 
 	function emailInvoice(invoiceId) {
 
@@ -2750,8 +2962,47 @@ function actionCreateInvoice_from_invoice()
 
 	}
 
+	function company_list_page() {
+	window.location = "company_list.php ";
+}
 
 
+function updateCompany(){
+
+	var $btn = $("#action_update_doctor").button("loading");
+
+	jQuery.ajax({
+
+		url: 'response.php',
+		type: 'POST',
+		data: $("#update_company").serialize(),
+		dataType: 'json',
+		success: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+
+
+			setInterval( company_list_page, 2500);
+
+
+			$btn.button("reset");
+		},
+		error: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+			$btn.button("reset");
+		}
+	});
+
+
+
+}
 
 
 

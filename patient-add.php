@@ -76,9 +76,7 @@ while($town=$results->fetch_assoc())
                     }
                 ?>
 </datalist>
-
-						
-							</div>
+</div>
 				
 							<!-- <div class="form-group no-margin-bottom" hidden>
 								<input type="hidden" class="form-control copy-input required" name="customer_postcode" id="customer_postcode" placeholder="Sex" tabindex="7">					
@@ -130,17 +128,36 @@ while($town=$results->fetch_assoc())
 						    	<input value="<?php echo $dt->format('d-m-Y') ; ?>" readonly type="text" class="form-control margin-bottom copy-input required" name="customer_date_of_reg" id="customer_date_of_reg" placeholder="<?php echo $dt->format('d-m-y') ; ?>" tabindex="4">
 						    </div>
 
-						    <!-- <div class="form-group" hidden>
-						    	<input type="hidden" class="form-control margin-bottom copy-input" name="customer_address_2" id="customer_address_2" placeholder="Address 2" tabindex="4">
-						    </div>
+		<label> Select Company  </label>
+		<div class="form-group">
+		<select class="form-control required" name="customer_company_name" id="customer_company_name" placeholder="customer_company_name" required="">
+				<option value="R-Patient" selected>Random Patient</option>
+                <?php
+                    $sqldepartment= "SELECT * FROM companies ";
+					$results = $mysqli->query($sqldepartment);
+                    
+                    while($rsdepartment=$results->fetch_assoc())
+                    {
+                       
+                       
+						
+			echo "<option value='$rsdepartment[name]' >$rsdepartment[name]</option>";
+                        
+                     
 
-						    <div class="form-group" hidden>
-						    	<input type="hidden" class="form-control margin-bottom copy-input required" name="customer_county" id="customer_county" placeholder="Country" tabindex="6">
-						    </div> -->
+                    }
+                ?>
+            </select>
+        </div>
 
-						    <!-- <div class="form-group no-margin-bottom" hidden>
-						    	<input type="hidden" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone Number" tabindex="8">
-							</div> -->
+
+
+
+
+
+
+
+
 						</div>
 					</div>
 				</div>

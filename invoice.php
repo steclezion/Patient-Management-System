@@ -296,7 +296,7 @@ class invoicr extends FPDF_rotation
 			for($i=0; $i<max(count($this->from),count($this->to),count($this->ship)); $i++) { // ADDED SHIPPING
 				$this->Cell($width,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->from[$i]),0,0,'L');
 				$this->Cell($width,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->to[$i]),0,0,'L');
-				$this->Cell(0,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->ship[$i]),0,0,'L'); // ADDED SHIPPING
+				@$this->Cell(0,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->ship[$i]),0,0,'L'); // ADDED SHIPPING
 				$this->Ln(5);
 			}	
 			$this->Ln(-6);

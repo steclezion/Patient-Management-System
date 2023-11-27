@@ -22,6 +22,7 @@ define('COMPANY_ADDRESS_2','Neemra Talata, Near MCC Building');
 define('COMPANY_ADDRESS_3','kush');
 define('COMPANY_COUNTY','Juba, South Sudan');
 define('COMPANY_POSTCODE',' ');
+define('COMPANY_NAME_',' ');
 define('COMPANY_SIZE_PAPER','A4');
 define('COMPANY_Header','<img src="images/Picture3.png" width="100%" height="100px"/>');
 

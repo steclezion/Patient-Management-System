@@ -151,7 +151,7 @@ $mysqli->close();
       <label><input id="create_invoice" type="checkbox"  <?php echo @$checked_created; ?> name="create_invoice" value="2">   Create Invoice      </label>
 	 
 	  <?php    if(in_array('3',$array_numbers)) { @$checked_manage = 'checked'; } else { @$checked_manage='';} ?>
-	  <label><input id="manage_invoice" type="checkbox" <?php echo @$checked_manage; ?> name="manage_invoice" value="3">     Manage Invoice      </label>&nbsp;
+	  <label><input id="manage_invoice" type="checkbox" <?php echo @$checked_manage; ?> name="manage_invoice" value="3">     Manage Invoice , Manage Receipts     </label>&nbsp;
 
 	  <?php    if(in_array('4',$array_numbers)) { @$checked_download = 'checked'; } else { @$checked_download='';} ?>
 	  <label><input id="download_csv" type="checkbox" <?php echo @$checked_download; ?> name="download_csv" value="4">    Download Invoices   </label>&nbsp;

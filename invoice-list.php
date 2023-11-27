@@ -16,7 +16,7 @@ if ((in_array('3', $user_permission))) {
 
     ?>
 
-<h1>Invoice List</h1>
+<h1>Credit Invoice List</h1>
 <hr>
 
 <div class="row">
@@ -33,6 +33,74 @@ if ((in_array('3', $user_permission))) {
 				<h4>Manage Invoices</h4>
 			</div>
 			<div class="panel-body form-group form-group-sm">
+      <div class="col-xs-8 text-right">
+	
+<form  id="invoice_with_report" method="POST" action="invoice_with_selection.php" name="post_submission"  onSubmit="return validate();" enctype="multipart/form-data"  >
+
+			<div class="col-xs-4 no-padding-right">
+				<div class="form-group">
+					<?PHP $dt = new DateTime(); 
+						  $dt->format('d-m-y') ;
+							   ?>
+					<div class="input-group date" id="invoice_date">
+						<label class="input-group-addon"> <b>  From  </b>  </label>
+						<input width="100"  required   type="text" class="form-control required" name="invoice_date_from" placeholder="<?php echo $dt->format('Y-m-d');  ?>"   data-date-format="<?php echo DATE_FORMAT ?>" />
+						<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-4">
+				<div class="form-group">
+					<div class="input-group date" id="invoice_due_date">
+						<label class="input-group-addon"> <b>  To  </b>  </label>
+						<input width="50"    required  type="text" class="form-control required" name="invoice_date_to" placeholder="<?php echo $dt->format('Y-m-d');  ?>"  value="<?php echo $dt->format('Y-m-d');  ?>"  data-date-format="<?php echo DATE_FORMAT ?>" />
+						<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="input-group col-xs-4 float-right">
+      <label class="input-group-addon"> <b> Status </b> </label>
+		 <select name="invoice_status" id="invoice_statuss" class="form-control"  required  aria-describedby="sizing-addon1" >
+     <option  value="All">All</option>
+						<option value="open" selected >Open</option>
+						<option value="paid" >Paid</option>
+</select>
+
+
+</div>
+</div>
+
+<div class="input-group col-xs-4 float-center">
+      <label class="input-group-addon"> <b>Company </b>  </label>
+		  <select class="form-control required"  required   name="customer_company_name" id="customer_company_name" placeholder="customer_company_name" required="">
+      <option value="All" selected>All</option>
+      <?php $sqldepartment= "SELECT * FROM companies ";  $results = $mysqli->query($sqldepartment);
+                    while($rsdepartment=$results->fetch_assoc())
+                    {
+     echo "<option value='$rsdepartment[name]' >$rsdepartment[name]</option>";
+                    }
+                ?>
+            </select>
+
+            
+        </div>
+        <br>
+		<div class="input-group col-xs-4 float-right">
+        <button type="submit"  name="submit" class="btn btn-primary">Generate Invoices</button>
+				</div>
+			</div>
+    
+
+
+   
+
+				</form>
+		</div>
+
 				<?php getInvoices(); ?>
 			</div>
 		</div>
@@ -59,6 +127,9 @@ if ((in_array('3', $user_permission))) {
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+
+
 
 <?php
     include('footer.php');

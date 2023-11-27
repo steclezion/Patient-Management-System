@@ -107,7 +107,7 @@ if ((in_array('14', $user_permission))) {
 	<div class="checkbox" >
   <ul class="list-group" id ="ex1">
       <label><input type="checkbox" name="create_invoice" value="2" id="create_invoice">    Create Invoice      </label>
-	  <label><input type="checkbox" name="manage_invoice" value="3" id="manage_invoice">    Manage Invoice      </label>&nbsp;
+	  <label><input type="checkbox" name="manage_invoice" value="3" id="manage_invoice">    Manage Invoice ,Manage Receipts      </label>&nbsp;
 	  <label><input type="checkbox" name="download_csv" value="4" id="download_csv">      Download Invoices   </label>&nbsp;
 	  <label><input type="checkbox" name="delete_invoice" value="17" id="delete_invoice" >   Delete Invoices   </label>&nbsp;
 </ul>

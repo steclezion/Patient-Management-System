@@ -30,6 +30,9 @@ if ($result) {
 	$customer_town = $row['town']; // customer Town
 	$customer_assinged_dr = $row['assigned_dr']; // customer Assigned Dr
 	$customer_date_of_reg = $row['date_of_reg']; // customer Date of regisration
+	$customer_company_name = $row['company_name']; // customer_company_name
+	
+
 	
 
 		
@@ -90,11 +93,10 @@ if ($result) {
                     }
                 ?>
             </select>
-
-							
-							</div>
-							<label> Town </label>
-							<div class="form-group">
+           </div>
+				
+		   <label> Town </label>
+		   <div class="form-group">
 <input  value="<?php echo $customer_town; ?>"  list="town" class="form-control margin-bottom required"  name="customer_town" id="customer_town" placeholder="Enter Title">
 
 <datalist id="town">
@@ -111,9 +113,7 @@ while($town=$results->fetch_assoc())
                     }
                 ?>
 </datalist>
-
-						
-							</div>
+ </div>
 				
 							<!-- <div class="form-group no-margin-bottom" hidden>
 								<input type="hidden" class="form-control copy-input required" name="customer_postcode" id="customer_postcode" placeholder="Sex" tabindex="7">					
@@ -167,6 +167,34 @@ while($town=$results->fetch_assoc())
 							<div class="form-group">
 						    	<input data-date="" data-date-format="DD MMMM YYYY"  value="<?php echo date('d-m-Y',strtotime($customer_date_of_reg));  ?>" readonly type="text" class="form-control margin-bottom copy-input required" name="customer_date_of_reg" id="customer_date_of_reg" placeholder="Date of Registration" tabindex="4">
 						    </div>
+
+
+							<label> Select Company  </label>
+		<div class="form-group">
+		<select class="form-control required" name="customer_company_name" id="customer_company_name" placeholder="customer_company_name" required="">
+				<option value="R-Patient" selected>Random Patient</option>
+                <?php
+                    $sqldepartment= "SELECT * FROM companies ";
+					$results = $mysqli->query($sqldepartment);
+                    
+                    while($rsdepartment=$results->fetch_assoc())
+                    {
+                       
+						if($rsdepartment['name'] == $customer_company_name)
+						{
+			 echo "<option  selected value='$rsdepartment[name]' >$rsdepartment[name]</option>";
+						}
+						else
+						{
+    echo "<option  value='$rsdepartment[name]' >$rsdepartment[name]</option>";
+}
+                     
+
+                    }
+
+                ?>
+            </select>
+        </div>
 
 							
 						</div>

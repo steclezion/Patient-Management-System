@@ -225,7 +225,7 @@ setInterval(function(){
             <?php } ?>
 
             <?php  if (in_array('3', $user_permission)) {?> 
-            <li><a href="receipts.php.php"><i class="fa fa-cab"></i>Manage Receipts</a></li>
+            <li><a href="receipts-list.php"><i class="fa fa-cab"></i>Manage Receipts</a></li>
             <?php } ?>
 
             <?php  if (in_array('3', $user_permission)) {?> 
@@ -333,6 +333,26 @@ setInterval(function(){
             <?php } ?>
           </ul>
         </li>
+
+
+        <li class="treeview">
+        <?php  if (in_array('11', $user_permission)) {?>
+          <a href="#"><i class="fa fa-users"></i><span>Company Infos</span>
+          <?php } ?>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+          <?php  if (in_array('11', $user_permission)) {?>
+            <li><a href="company_add.php"><i class="fa fa-user-plus"></i>Add Company</a></li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="company_list.php"><i class="fa fa-cog"></i>Manage Company</a></li>
+            <?php } ?>
+          </ul>
+        </li>
+
 
 
         

@@ -148,6 +148,126 @@ if ($action == 'download_csv'){
 
 
 // Create customer
+if ($action == 'create_company'){
+
+	// Basic Physicians Information
+	$company_name = $_POST['company_name']; // customer name
+	$company_number_employee = $_POST['company_number_employee']; // doctor address 1
+	$company_location = $_POST['company_location']; // doctor doctor_phone
+	$company_email = $_POST['company_email']; // doctor_town
+	$company_post_office = $_POST['company_post_office']; // doctor_postcode
+	$company_tele  = $_POST['company_tele']; // customer town
+	$company_department = $_POST['company_department']; // doctor_address_2
+	$contract_type = $_POST['contract_type']; // country
+	
+	$date = date('Y-m-d H:i:s');
+
+	$query = "INSERT INTO companies
+	(
+    type_contract,
+	name,
+	type,
+	num_of_vistors,
+    location,
+	telephone_number,
+	post_office,
+	email,
+	department,
+	Timestamp
+     )
+
+	VALUES (
+					?,
+					?,
+					?,
+					?,
+					?,
+					?,
+					?,
+					?,
+					?,
+					?
+			
+				);
+			";
+
+	/* Prepare statement */
+	$stmt = $mysqli->prepare($query);
+	if($stmt === false) {
+	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+	}
+
+	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+	$stmt->bind_param(
+		'ssssssssss',
+		$contract_type ,
+		$company_name,
+		$contract_type,
+		$company_number_employee,
+		$company_location,
+		$company_tele,
+		$company_post_office,
+		$company_email,
+		$company_department,
+		$date 
+
+	);
+
+	if($stmt->execute()){
+		//if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message' => 'Company has been added successfully!'
+		));
+	} else {
+		// if unable to create invoice
+		echo json_encode(array(
+			'status' => 'Error',
+			'message' => 'There has been an error, please try again.',
+			// debug
+			'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+		));
+	}
+
+	//close database connection
+	$mysqli->close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create customer
 if ($action == 'create_doctor'){
 
 	
@@ -269,13 +389,15 @@ if ($action == 'create_customer'){
 	$customer_town = $_POST['customer_town']; // customer Town
 	$customer_assinged_dr = $_POST['customer_assigned_dr']; // customer Assigned Dr
 	$customer_date_of_reg = $_POST['customer_date_of_reg']; // customer Date of regisration
+	$customer_company_name = $_POST['customer_company_name']; // customer_company_name
 	
 
 	$query = "INSERT INTO store_customers (
-         name, town, age,sex,assigned_dr,date_of_reg				
+         name, town, age,sex,assigned_dr,date_of_reg,company_name			
 				)
 				 VALUES (
 					
+					?,
 					?,
 					?,
 					?,
@@ -297,8 +419,8 @@ if ($action == 'create_customer'){
 
 	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
 	$stmt->bind_param(
-		'ssssss',
-		$customer_name,$customer_town,$customer_age,$customer_sex,$customer_assinged_dr,$customer_date_of_reg
+		'sssssss',
+		$customer_name,$customer_town,$customer_age,$customer_sex,$customer_assinged_dr,$customer_date_of_reg,$customer_company_name
 		);
 
 	if($stmt->execute()){
@@ -2036,6 +2158,7 @@ $cashier_id = $user_type_chasier;
 	$customer_county = '';//addslashes($_POST['customer_town']); // customer county
 	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
 	$customer_phone = '';// addslashes($_POST['customer_age']); // customer phone number
+	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
 	
 	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
 
@@ -2132,7 +2255,8 @@ $invoice_due_date= date_format($date,"Y-m-d");
 					address_2_ship,
 					town_ship,
 					county_ship,
-					postcode_ship
+					postcode_ship,
+					company_name
 				) VALUES (
 					'".$invoice_number."',
 					'".$customer_name."',
@@ -2149,6 +2273,7 @@ $invoice_due_date= date_format($date,"Y-m-d");
 					'".$customer_town_ship."',
 					'".$customer_county_ship."',
 					'".$customer_postcode_ship."'
+					'".$customer_company_name."'
 				);
 			";
 
@@ -2323,6 +2448,9 @@ if ($action == 'create_invoice'){
 	$customer_town = addslashes($_POST['customer_town']); // customer town
 	$customer_county = '';//addslashes($_POST['customer_town']); // customer county
 	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
+
+	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
+
 	$customer_phone = '';// addslashes($_POST['customer_age']); // customer phone number
 	
 	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
@@ -2422,7 +2550,8 @@ if ($action == 'create_invoice'){
 					address_2_ship,
 					town_ship,
 					county_ship,
-					postcode_ship
+					postcode_ship,
+					company_name
 				) VALUES (
 					'".$invoice_number."',
 					'".$customer_name."',
@@ -2438,7 +2567,8 @@ if ($action == 'create_invoice'){
 					'".$customer_address_2_ship."',
 					'".$customer_town_ship."',
 					'".$customer_county_ship."',
-					'".$customer_postcode_ship."'
+					'".$customer_postcode_ship."',
+					'".$customer_company_name."'
 				);
 			";
 
@@ -2483,7 +2613,8 @@ if ($action == 'create_invoice'){
 		//if saving success
 		echo json_encode(array(
 			'status' => 'Success',
-			'message' => 'Invoice has been created successfully!'
+			'message' => 'Invoice has been created successfully!',
+			'invoice_type' => $invoice_type
 		));
 
 		//Set default date timezone
@@ -2507,24 +2638,23 @@ if ($action == 'create_invoice'){
 		//Set due date
 		$invoice->setDue($invoice_due_date);
 		//Set from
-		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_NUMBER2));
+		
+		@$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NAME_,COMPANY_NUMBER,COMPANY_NUMBER2));
+		
+		
 		//Set to
-		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
+		@$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,$customer_company_name,"Phone: ".$customer_phone));
+		
+		
+		
 		//Ship to
-		$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
+		@$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
 		//Add items
 		// invoice product items
 		foreach($_POST['invoice_product'] as $key => $value) {
 
 		    $item_product =($value);
 
-
-// 			//echo $item_product= str_replace("'", '', $value);
-//  $explode = explode("'",$item_product);
- 
-//  echo $explode[0];  
-
-//  echo $explode[1]; 
 
 		    // $item_description = $_POST['invoice_product_desc'][$key];
 		    $item_qty = $_POST['invoice_product_qty'][$key];
@@ -2649,6 +2779,7 @@ if($action == 'update_customer') {
 	$customer_town = $_POST['customer_town']; // customer Town
 	$customer_assinged_dr = $_POST['customer_assigned_dr']; // customer Assigned Dr
 	$customer_date_of_reg = $_POST['customer_date_of_reg']; // customer Date of regisration
+	$customer_company_name = $_POST['customer_company_name']; // customer_company_name
 
 
 	// the query
@@ -2658,7 +2789,8 @@ if($action == 'update_customer') {
 				age = ?,
                 sex = ?,
                 assigned_dr = ?,
-				date_of_reg=?
+				date_of_reg=?,
+				company_name=?
 				
                 WHERE id = ?
 
@@ -2672,8 +2804,8 @@ if($action == 'update_customer') {
 
 	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
 	$stmt->bind_param(
-		'sssssss',
-		$customer_name,$customer_town,$customer_age,$customer_sex,$customer_assinged_dr,$customer_date_of_reg,$getID);
+		'ssssssss',
+		$customer_name,$customer_town,$customer_age,$customer_sex,$customer_assinged_dr,$customer_date_of_reg,	$customer_company_name,$getID);
 
 	//execute the query
 	if($stmt->execute()){
@@ -3419,6 +3551,76 @@ if($action == 'delete_user') {
 
 }
 
+
+
+// Delete Company
+if($action == 'delete_company') {
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	$id = $_POST["delete"];
+
+	// the query
+	$query = "DELETE FROM companies WHERE id = ?";
+
+	/* Prepare statement */
+	$stmt = $mysqli->prepare($query);
+	if($stmt === false) {
+	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+	}
+
+	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+	$stmt->bind_param('s',$id);
+
+	if($stmt->execute()){
+	    //if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message'=> 'Company has been deleted successfully!'
+		));
+
+	} else {
+	    //if unable to create new record
+	    echo json_encode(array(
+	    	'status' => 'Error',
+	    	//'message'=> 'There has been an error, please try again.'
+	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+	    ));
+	}
+
+	// close connection 
+	$mysqli->close();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Delete User
 if($action == 'delete_customer') {
 
@@ -3505,6 +3707,90 @@ if($action == 'delete_doctor') {
 
 	// close connection 
 	$mysqli->close();
+
+}
+
+//Update Company
+if($action == 'update_company') {
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+// invoice product information
+$getID = $_POST['id']; // id
+
+// Basic Company Information
+
+	$company_name = $_POST['company_name']; // customer name
+	$company_number_employee = $_POST['company_number_employee']; // doctor address 1
+	$company_location = $_POST['company_location']; // doctor doctor_phone
+	$company_email = $_POST['company_email']; // doctor_town
+	$company_post_office = $_POST['company_post_office']; // doctor_postcode
+	$company_tele  = $_POST['company_tele']; // customer town
+	$company_department = $_POST['company_department']; // doctor_address_2
+	$contract_type = $_POST['contract_type']; // country
+
+$getID = $_POST['id']; // Company ID
+
+
+//The Query
+ $query = "UPDATE companies SET
+
+type_contract  = ?,
+name  =  ?,
+num_of_vistors = ?,
+department = ?,
+location = ?,
+telephone_number = ?,
+post_office = ?,
+email = ?
+				 
+		 WHERE   id = ?
+		";
+
+/* Prepare statement */
+$stmt = $mysqli->prepare($query);
+if($stmt === false) {
+  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+}
+
+/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+$stmt->bind_param(
+	'sssssssss',
+	$contract_type, 
+	$company_name,
+	$company_number_employee,
+	$company_department,
+	$company_location,
+	$company_tele,
+	$company_post_office,
+	$company_email,
+	$getID
+);
+
+//execute the query
+if($stmt->execute()){
+	//if saving success
+	echo json_encode(array(
+		'status' => 'Success',
+		'message'=> 'Company Detatils has been updated successfully!'
+	));
+
+} else {
+	//if unable to create new record
+	echo json_encode(array(
+		'status' => 'Error',
+		//'message'=> 'There has been an error, please try again.'
+		'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+	));
+}
+
+//close database connection
+$mysqli->close();
+
+
+
 
 }
 

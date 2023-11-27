@@ -3,8 +3,12 @@
 
 include_once("includes/config.php");
 
+
+//get getReceipts
+
+
 // get invoice list
-function getInvoices() {
+function getReceipts() {
 
 	// Connect to the database
 	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
@@ -19,7 +23,8 @@ function getInvoices() {
 		FROM invoices i
 		JOIN customers c
 		ON c.invoice = i.invoice
-		WHERE i.invoice = c.invoice
+		WHERE i.invoice = c.invoice and  i.invoice_type = 'receipt' 
+
 		ORDER BY i.invoice DESC ";
 
 	// mysqli select query
@@ -82,6 +87,135 @@ function getInvoices() {
 			print
 			
 			'<td>
+					
+			        <a style="display:none" href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs" style="display:none">
+					<span hidden class="glyphicon glyphicon-edit" style="display:none" aria-hidden="true"></span></a>
+
+					<a style="display:none" href="#" hidden data-invoice-id="'.$row['invoice'].'" data-email="'.$row['email'].'" data-invoice-type="'.$row['invoice_type'].'" data-custom-email="'.$row['custom_email'].'" class="btn btn-success btn-xs email-invoice">
+					<span  style="display:none" class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a> 
+			';
+			
+			if ((in_array('4', $user_permission))) {
+				
+				print '<a href="invoices/'.$invoice_number.'.pdf" class="btn btn-info btn-xs" target="_blank">
+					<span class="glyphicon glyphicon-upload" aria-hidden="true"></span></a>';
+					
+}
+if ((in_array('17', $user_permission))) {
+    print '&nbsp; <a data-invoice-id="'.$row['invoice'].'" class="btn btn-danger btn-xs delete-invoice">
+				    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+}
+			'</td>
+			    </tr>
+			';
+
+		}
+
+		print '</tr></tbody></table>';
+
+	} else {
+
+		echo "<p>There are no invoices to display.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+}
+
+
+
+
+
+// get invoice list
+function getInvoices() {
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+		die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+    $query = "SELECT  *  
+		FROM invoices i
+		JOIN customers c
+		ON c.invoice = i.invoice
+		WHERE i.invoice = c.invoice and i.invoice_type = 'invoice'
+		ORDER BY i.invoice DESC ";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+
+
+	// mysqli select query
+	if($results) {
+
+		print '<table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"  class="display" cellspacing="0" width="100%"><thead><tr>
+
+				<th>Invoice</th>
+				<th>Patient</th>
+				<th>Issue Date</th>
+				<th>Due Date</th>
+				<th>Type</th>
+				<th>Status</th>
+				<th>Company Name</th>
+
+				<th>Actions</th>
+
+			  </tr></thead><tbody>';
+
+		while($row = $results->fetch_assoc()) {
+
+		$search = '/';
+		$replace = '_';
+		$subject = $row["invoice"];
+
+		$invoice_number = str_replace($search, $replace, $subject);
+
+		$date=date_create($row["invoice_date"]);
+		$date_invoice  = date_format($date,"d-m-Y");
+
+		$date=date_create($row["invoice_date"]);
+		$date_due  = date_format($date,"d-m-Y");
+
+
+			print '
+				<tr>
+					<td>'.$row["invoice"].'</td>
+					<td>'.$row["name"].'</td>
+				    <td>'.$date_invoice .'</td>
+				    <td>'.$date_due .'</td>
+				    <td>'.$row["invoice_type"].'</td>
+					
+				';
+
+				if($row['status'] == "open"){
+					print '<td><span class="label label-primary">'.$row['status'].'</span></td>';
+				} elseif ($row['status'] == "paid"){
+					print '<td><span class="label label-success">'.$row['status'].'</span></td>';
+				}
+				print '<td>'.$row["company_name"].'</td>';
+				$user_permission = array(); 
+				$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+				
+				for($i =0; $i <= count($explode_comma_separated); $i++)
+				{
+				@array_push($user_permission,$explode_comma_separated[$i]);
+				}
+
+			print
+			
+			'<td>
+		        	<a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs">
+					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
 					
 			        <a style="display:none" href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs" style="display:none">
 					<span hidden class="glyphicon glyphicon-edit" style="display:none" aria-hidden="true"></span></a>
@@ -443,21 +577,7 @@ function getInvoices_from_DR_for_Lab()
 			data-o_p="'.$row['O_P'].'" 
 
 			data-hematology_generated_file_path="'.$row['hematology_generated_file_path'].'" 
-
-
-
-			               
-			            
-			                   
-			             
-			  
-
-
-
-
-
-			
-			  class="btn btn-success btn-xs lab_request_from_dr_done">
+            class="btn btn-success btn-xs lab_request_from_dr_done">
 				<span class="glyphicon glyphicon-check" aria-hidden="true"></span>Done</a>';
 
 				'</td>';
@@ -1292,6 +1412,7 @@ function popCustomersList() {
 					data-customer-age="'.$row['age'].'" 
 					data-customer-sex="'.$row['sex'].'" 
 					data-customer-date_of_reg="'.$date.'" 
+					data-customer-company_name="'.$row["company_name"].'" 
 					
 					data-doctor-name="'.$row['doctorname'].'"
 					data-doctor-title="'.$row['title'].'" 
@@ -1562,6 +1683,7 @@ function getCustomers() {
 				<th>Gender</th>
 				<th ">Assigned Dr</th>
 				<th>Date Of Registration</th>
+				<th>Company Name</th>
 				<th>Action</th>
 
 			  </tr></thead><tbody>';
@@ -1585,6 +1707,7 @@ function getCustomers() {
 					<td>'.$row["sex"].'</td>
 					<td style="color:green">'.$row["doctorname"].'</td>
 					<td>'.date("d-m-Y",strtotime($row["date_of_reg"])).'</td>
+					<td>'.$row["company_name"].'</td>
 				    <td>';
 
 						if ((in_array('10', $user_permission))) {
@@ -1616,6 +1739,96 @@ function getCustomers() {
 }
 
 
+// get getcompany 
+
+function getcompany() 
+{
+
+
+// Connect to the database
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+// the query
+$query = "SELECT * FROM companies order by id ASC ";
+
+// mysqli select query
+ $results = $mysqli->query($query);
+
+if($results)  {  $n=1;
+
+	print '<table class="table table-striped table-hover table-bordered" id="data-table"><thead><tr>
+			 <th width="10%">ID</th>
+			<th width="10%">Name</th>
+			<th width="10%">Email</th>
+			<th width="10%"> Contract Type  </th>
+			<th width="10%"> Number of Visitors  </th>
+			<th width="10%"> Location  </th>
+			<th width="10%"> Tele </th>
+			<th width="10%"> Post Office </th>
+			<th width="10%"> Department </th>
+			<th width="10%"> Action </th>
+			
+			</tr></thead><tbody>';
+			$user_permission = array(); 
+			$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+			
+			for($i =0; $i <= count($explode_comma_separated); $i++)
+			{
+			@array_push($user_permission,$explode_comma_separated[$i]);
+			}
+
+	while($row = $results->fetch_assoc()) {
+
+		print '
+			<tr>
+			<td width="10%" >'.$n++.'</td>
+				<td width="10%" >'.$row["name"].'</td>
+				<td width="10%">'.$row["email"].'</td>
+				<td width="10%">'.$row["type_contract"].'</td>
+				<td width="10%">'.$row["num_of_vistors"].'</td>
+				<td width="10%">'.$row["location"].'</td>
+				<td width="10%">'.$row["telephone_number"].'</td>
+				<td width="10%">'.$row["post_office"].'</td>
+				<td width="10%">'.$row["department"].'</td>
+				
+			
+				
+				<td>';
+				
+				if ((in_array('13', $user_permission))) {
+		   print'<a href="company-edit.php?id='.$row["id"].'" class="btn btn-primary btn-xs"> <span class="glyphicon glyphicon-edit" aria-hidden="true"> </span></a> &nbsp;';
+				}
+				
+	if ((in_array('20', $user_permission))) 
+	            {
+	print '<a data-company-id="'.$row['id'].'"  class="btn btn-danger btn-xs delete-company"> <span class="glyphicon glyphicon-trash" aria-hidden="true"> </span></a>';
+				}
+				'</td>
+			</tr>
+		';
+	}
+
+	print '</tr></tbody></table>';
+
+} else {
+
+	echo "<p>There are no companies  to display.</p>";
+
+}
+
+// Frees the memory associated with a result
+$results->free();
+
+// close connection 
+$mysqli->close();
+
+
+}
 
 
 

@@ -32,11 +32,11 @@ if ((in_array('5', $user_permission))) {
 		</div>
 		<div class="col-xs-8 text-right">
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-xs-6">  
 					<h2 class="">Select Type:</h2>
 				</div>
 				<div class="col-xs-3">
-					<select name="invoice_type" id="invoice_type" class="form-control">
+					<select name="invoice_type" id="invoice_type" class="form-control"  onchange="invoice_status()" style="bg-color:green">
 						<option value="invoice" >Invoice</option>
 						<option value="quote">Quote</option>
 						<option value="receipt" selected >Receipt</option>
@@ -122,11 +122,18 @@ if ((in_array('5', $user_permission))) {
 									placeholder="Date of Registration" aria-describedby="sizing-addon1" tabindex="2">
 							</div>
 
+							<div class="form-group">
+								<input type="text" class="form-control copy-input required" name="customer_company_name"
+									id="customer_company_name" placeholder="Company Name" readonly tabindex="7">
+							</div>
+
+
 							<div class="form-group no-margin-bottom">
 								<input type="text" class="form-control copy-input required" name="customer_sex"
 									id="customer_sex" placeholder="Gender" readonly tabindex="7">
 							</div>
 
+					
 						</div>
 
 					</div>
