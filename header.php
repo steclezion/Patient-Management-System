@@ -268,7 +268,7 @@ setInterval(function(){
           </a>
           <ul class="treeview-menu">
 
-          <?php  if (in_array('3', $user_permission)) {?> 
+          <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
             <li><a href="request_from_dr_for_lab.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
             <?php } ?>
 

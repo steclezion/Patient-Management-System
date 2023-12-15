@@ -459,6 +459,9 @@ if( ($Status == 'open' || $Status == 'paid' ) && $Company != 'All' )
                       
           
                         </tr></thead><tbody>';
+                        $invoice_array = array();
+                        $concatenated_array = $Company."^".$From."^".$To."^".$Status;
+                       
           
                   while($row = $results->fetch_assoc()) {
                     $Total_sum = 0;
@@ -533,8 +536,11 @@ if( ($Status == 'open' || $Status == 'paid' ) && $Company != 'All' )
                   if($General_Total >0){ 
                      print '
                   
-                     <div class="input-group col-xs-4 float-right"> <button type="submit"  name="submit" class="btn btn-success">Proceed Payments</button>
-                    </div> ';}
+                     <a href="invoice-proceed_payments.php?invoice_explode='.$concatenated_array.'" class="btn btn-primary btn-sm">
+                     <span class="glyphicon glyphicon-edit" aria-hidden="true">Proceed Payments</span></a>';
+                  
+                  
+                  }
                     
                    
                  print ' </th> </tr>  </tbody></table>';

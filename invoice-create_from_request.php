@@ -161,6 +161,10 @@ if ((in_array('5', $user_permission))) {
 									name="customer_date_of_reg" id="customer_date_of_reg"
 									placeholder="Date of Registration"  value ="<?php echo $Get_Customer_record['postcode'];?>"  aria-describedby="sizing-addon1" tabindex="2">
 							</div>
+							<div class="form-group">
+								<input type="text" class="form-control copy-input required" name="customer_company_name"
+									id="customer_company_name" placeholder="Company Name" value ="<?php echo $Get_Customer_record['company_name'];?>" readonly tabindex="7">
+							</div>
 
 							<div class="form-group no-margin-bottom">
 								<input type="text" class="form-control copy-input required" name="customer_sex"

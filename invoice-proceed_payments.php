@@ -1,3 +1,5 @@
+
+
 <?php
 
 
@@ -51,7 +53,7 @@ if ((in_array('3', $user_permission))) {
 				 $To = $explode_invoice[2];
 				 $Status = $explode_invoice[3];
 
-
+				
  
  $From_style = $From;
  $To_style =  $To; 
@@ -189,12 +191,18 @@ if ((in_array('3', $user_permission))) {
 									 <div class="input-group col-xs-4 float-right"> 
 								 
 									 <a href="proceed_payments.php?invoices='.$array_invoice.'" class="btn btn-success btn-sm">
-									 <span class="glyphicon glyphicon-edit" aria-hidden="true">Click to confirm payments</span></a>
+									 <span class="glyphicon glyphicon-edit" aria-hidden="true">Confirm Payments</span></a>
 				 
 									</div> <br><br>';}
 									
 								   
-								 print ' </th> </tr>  </tbody></table>';
+								 print ' </th> </tr>  </tbody></table>
+								 
+								 <a href="print_payment.php?invoices='.$Company."^".$From."^".$To."^".$Status.'" type="button" class="btn btn-primary btn-md">
+									 <span class="glyphicon glyphicon-print   " aria-hidden="true">Print</span></a>
+								 
+								 
+								 ';
 						   
 							   } else {
 						   

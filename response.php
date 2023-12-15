@@ -2143,13 +2143,9 @@ $cashier_id = $user_type_chasier;
   if($action == 'create_invoice_from_invoice')
   {
 
-
-
-		// invoice customer information
+// invoice customer information
 	// billing
-
 	$tranaction_id =  addslashes($_POST['transaction_id']);
-
 	$customer_name = addslashes($_POST['customer_name']); // customer name
 	$customer_email =addslashes( $_POST['customer_town']); // customer email
 	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
@@ -2157,8 +2153,10 @@ $cashier_id = $user_type_chasier;
 	$customer_town = addslashes($_POST['customer_town']); // customer town
 	$customer_county = '';//addslashes($_POST['customer_town']); // customer county
 	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
-	$customer_phone = '';// addslashes($_POST['customer_age']); // customer phone number
+
 	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
+
+	$customer_phone = '';// addslashes($_POST['customer_age']); // customer phone number
 	
 	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
 
@@ -2173,25 +2171,25 @@ $cashier_id = $user_type_chasier;
 	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
 	$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
 
-	$invoice_date = addslashes($_POST['invoice_date']); // invoice date
+	//Date Invoice 
+	$invoice_date = ($_POST['invoice_date']); // invoice date
+	$inv_date =  explode('/',$invoice_date);
+	$inv_date = $inv_date[2]."-".$inv_date[1]."-".$inv_date[0];
+    
+	$date=date_create($inv_date);
+	$invoice_date = date_format($date,"Y-m-d");
 
-		//Date Invoice 
-		$invoice_date = ($_POST['invoice_date']); // invoice date
-		$inv_date =  explode('/',$invoice_date);
-		$inv_date = $inv_date[2]."-".$inv_date[1]."-".$inv_date[0];
-		
-		$date=date_create($inv_date);
-		$invoice_date = date_format($date,"Y-m-d");
+
+
 
 	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
 
-
-//Date Invoice_due
-$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
-$inv_date =  explode('/',$invoice_due_date);
-$inv_date = $inv_date[2]."-".$inv_date[1]."-".$inv_date[0];
-$date=date_create($inv_date);
-$invoice_due_date= date_format($date,"Y-m-d");
+	//Date Invoice_due
+	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
+	$inv_date =  explode('/',$invoice_due_date);
+	$inv_date = $inv_date[2]."-".$inv_date[1]."-".$inv_date[0];
+    $date=date_create($inv_date);
+	$invoice_due_date= date_format($date,"Y-m-d");
 
 	$invoice_subtotal = addslashes($_POST['invoice_subtotal']); // invoice sub-total
 	$invoice_shipping = addslashes($_POST['servicecharge']); // invoice shipping amount
@@ -2207,7 +2205,7 @@ $invoice_due_date= date_format($date,"Y-m-d");
 	$id = $_SESSION['login_user_id'];
 
 	// insert invoice into database
-	$query = "INSERT INTO invoices (
+	 $query = "INSERT INTO invoices (
 					invoice,
 					custom_email,
 					invoice_date, 
@@ -2234,11 +2232,13 @@ $invoice_due_date= date_format($date,"Y-m-d");
 				  	'".$invoice_total."',
 				  	'".$invoice_notes."',
 				  	'".$invoice_type."',
-					'registered',
+					'new',
 					'".$id."',
 				  	'".$invoice_status."'
 			    );
 			";
+
+			
 	// insert customer details into database
 	$query .= "INSERT INTO customers (
 					invoice,
@@ -2272,7 +2272,7 @@ $invoice_due_date= date_format($date,"Y-m-d");
 					'".$customer_address_2_ship."',
 					'".$customer_town_ship."',
 					'".$customer_county_ship."',
-					'".$customer_postcode_ship."'
+					'".$customer_postcode_ship."',
 					'".$customer_company_name."'
 				);
 			";
@@ -2318,7 +2318,8 @@ $invoice_due_date= date_format($date,"Y-m-d");
 		//if saving success
 		echo json_encode(array(
 			'status' => 'Success',
-			'message' => 'Invoice has been created successfully!'
+			'message' => 'Invoice has been created successfully!',
+			'invoice_type' => $invoice_type
 		));
 
 		//Set default date timezone
@@ -2342,16 +2343,23 @@ $invoice_due_date= date_format($date,"Y-m-d");
 		//Set due date
 		$invoice->setDue($invoice_due_date);
 		//Set from
-		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_NUMBER2));
+		
+		@$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NAME_,COMPANY_NUMBER,COMPANY_NUMBER2));
+		
+		
 		//Set to
-		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
+		@$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,$customer_company_name,"Phone: ".$customer_phone));
+		
+		
+		
 		//Ship to
-		$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
+		@$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
 		//Add items
 		// invoice product items
 		foreach($_POST['invoice_product'] as $key => $value) {
 
 		    $item_product =($value);
+
 
 		    // $item_description = $_POST['invoice_product_desc'][$key];
 		    $item_qty = $_POST['invoice_product_qty'][$key];
@@ -2404,15 +2412,16 @@ $invoice_due_date= date_format($date,"Y-m-d");
 
 		$invoice->render('invoices/'.$invoice_number.'.pdf','F');
 
-   $link ='invoices/'.$invoice_number.'.pdf';
+		$link ='invoices/'.$invoice_number.'.pdf';
 
-   $subject = trim($subject);
+		$subject = trim($subject);
 
-    // Connect to the database
-	   $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-	   $query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject',  `status`= 'Payment Finishied', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
+		  // Connect to the database
+		  $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+		  $query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject',  `status`= 'Payment Finishied', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
+   
+		  $results = $mysqli->query($query_update);
 
-	   $results = $mysqli->query($query_update);
 
 	} else {
 		// if unable to create invoice
@@ -2427,7 +2436,169 @@ $invoice_due_date= date_format($date,"Y-m-d");
 	//close database connection
 	$mysqli->close();
 
+}
 
+
+
+// Adding new product
+if($action == 'delete_invoice') {
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	$id = $_POST["delete"];
+
+	// the query
+	$query = "DELETE FROM invoices WHERE invoice = '".$id."';";
+	$query .= "DELETE FROM customers WHERE invoice = '".$id."';";
+	$query .= "DELETE FROM invoice_items WHERE invoice = '".$id."';";
+
+	@unlink('invoices/'.$id.'.pdf');
+
+	if($mysqli -> multi_query($query)) {
+	    //if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message'=> 'Invoice has been deleted successfully!'
+		));
+
+	} else {
+	    //if unable to create new record
+	    echo json_encode(array(
+	    	'status' => 'Error',
+	    	//'message'=> 'There has been an error, please try again.'
+	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+	    ));
+	}
+
+	// close connection 
+	$mysqli->close();
+
+}
+
+// Adding new product
+if($action == 'update_customer') {
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	$getID = $_POST['id']; // id
+
+	// invoice customer information
+	// billing
+	$customer_name = $_POST['customer_name']; // customer name
+	$customer_age = $_POST['customer_age']; // customer age
+	$customer_sex = $_POST['customer_sex']; // customer Sex
+	$customer_town = $_POST['customer_town']; // customer Town
+	$customer_assinged_dr = $_POST['customer_assigned_dr']; // customer Assigned Dr
+	$customer_date_of_reg = $_POST['customer_date_of_reg']; // customer Date of regisration
+	$customer_company_name = $_POST['customer_company_name']; // customer_company_name
+
+
+	// the query
+	$query = "UPDATE store_customers SET
+				name = ?,
+				town = ?,
+				age = ?,
+                sex = ?,
+                assigned_dr = ?,
+				date_of_reg=?,
+				company_name=?
+				
+                WHERE id = ?
+
+			";
+
+	/* Prepare statement */
+	$stmt = $mysqli->prepare($query);
+	if($stmt === false) {
+	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+	}
+
+	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+	$stmt->bind_param(
+		'ssssssss',
+		$customer_name,$customer_town,$customer_age,$customer_sex,$customer_assinged_dr,$customer_date_of_reg,	$customer_company_name,$getID);
+
+	//execute the query
+	if($stmt->execute()){
+	    //if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message'=> 'Patients has been updated successfully!'
+		));
+
+	} else {
+	    //if unable to create new record
+	    echo json_encode(array(
+	    	'status' => 'Error',
+	    	//'message'=> 'There has been an error, please try again.'
+	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+	    ));
+	}
+
+	//close database connection
+	$mysqli->close();
+	
+}
+
+// Update product
+if($action == 'update_product') {
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// invoice product information
+	$getID = $_POST['id']; // id
+	$product_name = $_POST['product_name']; // product name
+	$product_desc = $_POST['product_desc']; // product desc
+	$product_price = $_POST['product_price']; // product price
+
+	// the query
+	$query = "UPDATE products SET
+				product_name = ?,
+				product_desc = ?,
+				product_price = ?
+			 WHERE product_id = ?
+			";
+
+	/* Prepare statement */
+	$stmt = $mysqli->prepare($query);
+	if($stmt === false) {
+	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+	}
+
+	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+	$stmt->bind_param(
+		'ssss',
+		$product_name,$product_desc,$product_price,$getID
+	);
+
+	//execute the query
+	if($stmt->execute()){
+	    //if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message'=> 'Product has been updated successfully!'
+		));
+
+	} else {
+	    //if unable to create new record
+	    echo json_encode(array(
+	    	'status' => 'Error',
+	    	//'message'=> 'There has been an error, please try again.'
+	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+	    ));
+	}
+
+	//close database connection
+	$mysqli->close();
 
 
   }
