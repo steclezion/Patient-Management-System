@@ -1273,6 +1273,50 @@ if($results) {
 
 
 
+// Initial invoice number
+function getInvoiceId_print() {
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+$query = "SELECT invoice_number FROM generate_invoice_print ORDER BY invoice_number DESC LIMIT 1";
+
+	if ($result = $mysqli->query($query)) {
+
+		$row_cnt = $result->num_rows;
+
+	    $row = mysqli_fetch_assoc($result);
+
+	    //var_dump($row);
+		$Today = date('y:m:d');
+		$new = date(' Y', strtotime($Today));
+	    if($row_cnt == 0){
+			// echo INVOICE_INITIAL_VALUE;
+		
+           echo  "INV/".trim($new),"/ORG/0001";
+		} else {
+            $Get_the_number = explode('/',$row['invoice_number']);
+			$count_squence = $Get_the_number[2] + 1;
+
+		   $zero_filled_counter = sprintf('%04d',$count_squence);
+			
+			echo "INV/".trim($new),"/ORG/".$zero_filled_counter;
+
+		}
+
+	    // Frees the memory associated with a result
+		$result->free();
+
+		// close connection 
+		$mysqli->close();
+	}
+	
+}
 
 
 

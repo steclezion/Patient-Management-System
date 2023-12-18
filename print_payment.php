@@ -1,3 +1,19 @@
+<style>
+table, td, th {
+    border: 1px solid black;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    height: 50px;
+}
+</style>
+
+
 <?php
 
 //Include mpdf library file
@@ -55,33 +71,6 @@ if ((in_array('3', $user_permission))) {
 				$invoice_array = array();
 ?>
 
-<textarea id="summernote" name="template_for_notification" > 
-
-
-<section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12" id="letter_acknowledgement">
-            <!-- Main content -->
-            <div class="invoice p-3 mb-3">
-              <!-- title row -->
-              <div class="row">
-                <div class="col-12">
-                  <h4>
-         
-              </h4>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- info row -->
-
-  <!-- Main content -->
-  <div class='invoice'>
-      <!-- title row -->
-      <div class='row'>
-        <div class='col-12'>
-   
-          <h4>
            
 <?php
 
@@ -90,41 +79,89 @@ $invoice_explode = $_GET['invoices'];
 $explode_invoice = explode("^",$invoice_explode);
 
  $company_name  = $explode_invoice[0];
- $Company  = $explode_invoice[0];;
+ $Company  = trim($explode_invoice[0]);
  $From = $explode_invoice[1];
  $To = $explode_invoice[2];
  $Status = $explode_invoice[3];
  $From_style = $From;
  $To_style =  $To; 
 
+
+  $query_comp = "SELECT  *  FROM companies where  name = '$Company' ";
+  // mysqli select query
+$results_comp = $mysqli->query($query_comp);
+$row_comp = $results_comp->fetch_assoc();
+
+
+
 ?>
-<input type="hidden" value="{{  $id }}" id="application_id" name="" />
-<span hidden> <i class='fas fa-globe'>  </i>  </span>
-<small class='float-right' style='position: absolute;left: 80%; '>Date: <span id="current_date">  <?php  $Today = date('y/m/d'); $new = date('Y', strtotime($Today));
-  echo "<span style='color:orange;font-type:Monotype Corsiva;'>". $currentDate = date('d-m-Y')."</span>"; 
-  
-  ?></span></small>
 
-<br> <h2  style='position: absolute;left: 28%; ' > INVOICE </h2> </h4>
-</div>
-</div>
+<textarea id="summernote" name="template_for_notification" > 
 
 
-<br><br> <br><br>    <br><br> <br><br>   <br><br> 
+<input type="hidden" name="invoice_id" id="invoice_id" class="form-control required"
+					placeholder="Invoice Number" readonly aria-describedby="sizing-addon1" value="<?php getInvoiceId(); ?>">
+          <h4>
 
-<div class='row invoice-info' style='position: absolute;left: 0%; top: 15%;'>
+	</head>
+
+	<body>
+  <div class='invoice-box'  id ="to_be_print" >
+
+   <h2  style='position: absolute;left: 45%; ' > <b>  INVOICE  </b> </h2> <br><br><br><br>
+
+			<table cellpadding="0" cellspacing="0">
+				<tr class="top">
+					<td colspan="2">
+						<table>
+							<tr>
+								<td class="title">
+              <?php print "  <h4><b>  <span style='color:orange;'> $From_style  -  $To_style  </span> -  </b> <b style='color:red; font-size:25px;width:32px;padding: 5px;margin: 0;'> $Company </b>  </h4>" ; ?>
+								</td>
+
+								<td>
+                <div class='row invoice-info' >
 <div class='col-lg-12'    >
-<!-- <b> Customer’s Name :</b> <span id="fullname_contact"> {{ $apps->cfname." ".$apps->cmname." ".$apps->clname }}  </span> <br> -->
 
 <b> Company Name :</b> <span id="fullname_contact"> <?php echo $company_name ?>  </span> <br>
-<b>Receipt number:</b> <span id="receipt_number">      </span> <br>
-<b>Date of issuance:</b>  <span id="issuance_date"> <?php echo $company_name ?>  </span> <br>
+<b> Invoice number:</b> <span id="receipt_number"><?php trim(getInvoiceId_print()); ?></span> <br>
+<b>Date of issuance:</b>  <span id="issuance_date"> <span id="current_date">  <?php  $Today = date('y/m/d'); $new = date('Y', strtotime($Today));
+  echo "<span style='color:orange;font-type:Monotype Corsiva;'>". $currentDate = date('d-m-Y')."</span>"; ?>  </span> 
 </div>
 <!-- /.col -->
 </div>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr class="information">
+					<td colspan="2">
+						<table>
+							<tr>
+								<td style="text-align:left">
+									Location : <?php echo $row_comp['location']; ?> <br />
+									Email: <?php echo $row_comp['email']; ?> <br />
+									Tel: <?php $row_comp['telephone_number']; ?>
+								</td>
+
+              
 
 
+								<td style="text-align:right">
+									Receiver Name Mr. :   <br />
+									Contract Type : <?php echo $row_comp['type_contract']; ?> <br >
+									Juba, South Sudan
+								</td>
+							</tr>
+						</table>
 
+
+            <table>
+							<tr  rowspan=2>
+								<td>
+									
 <p> Dear ,<br><br>
 
 This is just a friendly reminder that your account is past due. According to our records your balance of $ is currently . We have emailed a detailed copy of your account statements. In the event you have not received these messages and documents, we have provided a summary of your account below.
@@ -141,35 +178,24 @@ ATTN: Accounting Dept.
 If there is some error or you are unable to pay at this time, please contact me at so we can correct any errors or arrange for another payment plan. Thank you for your prompt response to this request and for your continued business.
 <br>
 Sincerely, </p>
-
- <div class='row' id="financial_notification">
-        <div class='col-12'>
-        <br/> 
-
-<style>
-table, td, th {
-    border: 1px solid black;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th {
-    height: 50px;
-}
-</style>
-
-  
-
-<?php
+									john@example.com
+								</td>
+							</tr>
+						</table>
 
 
+					</td>
+
+
+
+
+
+				</tr>
+
+				<?php
 $General_Total=0;
-										   
-										   $company_name =  $company_name ;
-										   $data_table = 'data-table';
+$company_name =  $company_name ;
+$data_table = 'data-table';
 					 
 				   
 						 // the query
@@ -192,25 +218,20 @@ $General_Total=0;
 					 // mysqli select query
 					 if($results) {
 						   print '
-						   <h4><b>  <span style="color:orange;"> '.$From_style.'  -  '.$To_style.' </span> -  </b> <b style="color:red; font-size:25px;width:32px;padding: 5px;border: 2px solid gray;margin: 0;"> '.$Company.' </b>  </h4>
 						   <table class="table table-striped table-bordered table-hover table-condensed" id="examplee" cellspacing="0"  class="display" cellspacing="0" width="100%"><thead>
 						
  
 						   <tr>
 						   
-										   <th>Invoice</th>
-										   <th>Patient</th>
-										   <th>Issue Date</th>
-										   <th>Company Name</th>
-										   <th>Type</th>
-										   <th>Status</th>
-										   <th>Total Sum</th>
-				 
-										 
-										   
-									   
-						   
-										 </tr></thead><tbody>';
+										   <th width="10px" >Invoice</th>
+										   <th width="10px">Patient</th>
+										   <th width="10px" >Issue Date</th>
+										   <th width="10px" >Company Name</th>
+										   <th width="10px" >Type</th>
+										   <th width="10px" >Status</th>
+										   <th width="30px" >Total Sum</th>
+				               </tr></thead><tbody>';?>
+<?php
 										 $invoice_array = array();$array_invoice ='';
 										 
 										 $concatenated_array = $company_name."^".$From."^".$To."^".$Status;
@@ -291,14 +312,11 @@ $General_Total=0;
 
 									
 							
-									 print $General_Total;
+									 print $General_Total."  SSP";
 									
 								
 								}
 									
-								   
-						
-						   
 							   } 
 							   
 							   else {
@@ -306,11 +324,12 @@ $General_Total=0;
 								   echo "<p>There are no invoices to display.</p>";
 								   
 						   
-							   }
+                 }
 				   
 				   
 				   
 						
+                
 				 
 				 
 				 // Frees the memory associated with a result
@@ -324,37 +343,8 @@ $General_Total=0;
 				
 				?>
 				</table>
-			</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<p class="a"> <b> Amount in words: <?php print $numberTransformer->toWords($General_Total); ?>  SSP ONLY   </b> </p>
+        <p class="a"> <b> Amount in words: <?php print $numberTransformer->toWords($General_Total ); ?>  SSP ONLY   </b> </p>
 <br/><br/>
 
   <p id="nmfa_info">
@@ -371,34 +361,23 @@ $General_Total=0;
   <br><br><br>
   </div>    
  <!-- <button id="addRow" class="btn btn-success btn-sm"><i class="fas fa-plus"> </i></button> -->
- </div>
-          <!-- /.col -->
-</div>
-</div>
-
-<br><br><br>
-
- 
-</p>        
-</div>
-</div>
-    <!-- /.content -->
-</div>
 
 
-
-
- </textarea>
- </div>
-        </div>
-        </div>
-		
+			</table>
+		</div>
+</textarea>
   
         <div class='row'>
         <div class='col-12' table-responsive  >
 
 <button type="button" class="btn btn-primary float-md-left" 
-id="financial_notification_save"> <i class="fas fa-save"></i> Save  </button>
+id="invoice_save"> <i class="fas fa-save"></i> Save  </button>
+
+
+<a target="_blank" style="display:none" id="print_invoice"  href="" type="button" class="btn btn-primary btn-md float-right" > <i class="glyphicon glyphicon-download"></i> Download </a>
+
+
+
 
 <a href="{{ url()->previous() }}" type="button" class="btn btn-info float-md-right"  
 id="acknowledgment_letter"> <i class="fas fa-arrow-circle-left"></i> Back </a>
@@ -473,44 +452,41 @@ else
   });
 
 
-  $('#financial_notification_save').click(function () {
+  $('#invoice_save').click(function () {
         //alert("hellow Eyoba");
-  if (confirm("Are you sure you want to save this letter of Invoice."+
-             "Changes will not be reverted.") == true) {
+  if (confirm("Are you sure you want to print this letter of Invoice." + "Changes will not be reverted.") == true)
+   {
   
-   var To_be_rendered = document.getElementById('financial_notification').innerHTML ; 
-   var nmfa_info = document.getElementById('nmfa_info').innerHTML; 
-   var application_id = document.getElementById('application_id').value;
-   var financial_notification_date_of_order = document.getElementById('financial_notification_date_of_order').innerHTML;
-   var fullname_contact = document.getElementById('fullname_contact').innerHTML;
-   var receipt_number = document.getElementById('receipt_number').innerHTML ;
-   var current_date = document.getElementById('current_date').innerHTML ;
+   var To_be_rendered = document.getElementById('to_be_print').innerHTML ; 
+   var invoice_id = document.getElementById('invoice_id').value; 
+   var action = 'print_html';
+
+   alert(To_be_rendered );
+
   
   
-  document.getElementById('financial_notification_save').disabled = true;
+  document.getElementById('invoice_save').disabled = true;
 
 
 
      $.ajax({  
 
-url: 'response.php',
-type:'POST',
-data: {
+  url: 'response.php',
+  type:'POST',
+  data: {
+  
+  action : action,
   To_be_rendered:To_be_rendered,
-  nmfa_info:nmfa_info,
-  application_id:application_id,
-   financial_notification_date_of_order:financial_notification_date_of_order,
-  fullname_contact:fullname_contact,
-  receipt_number: receipt_number,
-  current_date:current_date,
+  invoice_id:invoice_id,
+
 },
 processData: true,
 success: (data) => {
 if(data.Message==true)  
 {
-//document.getElementById('table_upload_cv').innerHTML = data.Data_returned;
 
 
+  $('#print_invoice').attr("href", data.Download);
 var Toast = Swal.mixin({
               toast: true,
               position: 'top-end',
@@ -518,7 +494,7 @@ var Toast = Swal.mixin({
               timer: 6000
                   }); 
                   
-    
+                  document.getElementById('invoice_save').disabled = false;
 
  toastr.success("Financial notification saved successfully")
  var id = setInterval(finance_not, 2000);
@@ -564,6 +540,100 @@ console.log(data);
   
 </script>
 
+
+<style>
+			.invoice-box {
+				max-width: 800px;
+				margin: auto;
+				padding: 30px;
+				border: 1px solid #eee;
+				box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+				font-size: 16px;
+				line-height: 24px;
+				font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+				color: #555;
+			}
+
+			.invoice-box table {
+				width: 100%;
+				line-height: inherit;
+				text-align: left;
+			}
+
+			.invoice-box table td {
+				padding: 5px;
+				vertical-align: top;
+			}
+
+			.invoice-box table tr td:nth-child(2) {
+				text-align: right;
+			}
+
+			.invoice-box table tr.top table td {
+				padding-bottom: 20px;
+			}
+
+			.invoice-box table tr.top table td.title {
+				font-size: 45px;
+				line-height: 45px;
+				color: #333;
+			}
+
+			.invoice-box table tr.information table td {
+				padding-bottom: 40px;
+			}
+
+			.invoice-box table tr.heading td {
+				background: #eee;
+				border-bottom: 1px solid #ddd;
+				font-weight: bold;
+			}
+
+			.invoice-box table tr.details td {
+				padding-bottom: 20px;
+			}
+
+			.invoice-box table tr.item td {
+				border-bottom: 1px solid #eee;
+			}
+
+			.invoice-box table tr.item.last td {
+				border-bottom: none;
+			}
+
+			.invoice-box table tr.total td:nth-child(2) {
+				border-top: 2px solid #eee;
+				font-weight: bold;
+			}
+
+			@media only screen and (max-width: 600px) {
+				.invoice-box table tr.top table td {
+					width: 100%;
+					display: block;
+					text-align: center;
+				}
+
+				.invoice-box table tr.information table td {
+					width: 100%;
+					display: block;
+					text-align: center;
+				}
+			}
+
+			/** RTL **/
+			.invoice-box.rtl {
+				direction: rtl;
+				font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+			}
+
+			.invoice-box.rtl table {
+				text-align: right;
+			}
+
+			.invoice-box.rtl table tr td:nth-child(2) {
+				text-align: left;
+			}
+		</style>
 
 
 <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css"> 

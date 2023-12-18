@@ -448,6 +448,236 @@ if ($action == 'create_customer'){
 //create_renal_test
 
 
+if($action == 'print_html')
+{
+
+
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+
+	$To_be_rendered      =       $_POST['To_be_rendered'];
+    $invoice_id   =       $_POST['invoice_id'];
+	
+
+
+
+	      session_start();
+	     $_SESSION['login_username'];
+	     $id = $_SESSION['login_user_id'];
+	
+		//$_SESSION['login_user_id'];
+		$query = "SELECT * FROM `users` WHERE id  = $id ";
+		$result_query = $mysqli->query($query);
+		$result_name = $result_query->fetch_assoc();
+		$name =  $result_name['name'] ;
+	
+		
+	
+		$date = new DateTime(); // For today/now, don't pass an arg.
+		$date= $date->format("d-m-Y") ;
+
+
+
+
+
+   if( $result_query == true ){
+	$search = '/';
+	$replace = '_';
+	$subject = $invoice_id;
+
+	$invoice_number = str_replace($search, $replace, $subject);
+
+
+	 $file_name = 'Printed/'.$invoice_number."_".time().".pdf";
+
+	 $stylesheet =" <style>
+	 .invoice-box {
+		 max-width: 800px;
+		 margin: auto;
+		 padding: 30px;
+		 border: 1px solid #eee;
+		 box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+		 font-size: 16px;
+		 line-height: 24px;
+		 font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+		 color: #555;
+	 }
+
+	 .invoice-box table {
+		 width: 100%;
+		 line-height: inherit;
+		 text-align: left;
+	 }
+
+	 .invoice-box table td {
+		 padding: 5px;
+		 vertical-align: top;
+	 }
+
+	 .invoice-box table tr td:nth-child(2) {
+		 text-align: right;
+	 }
+
+	 .invoice-box table tr.top table td {
+		 padding-bottom: 20px;
+	 }
+
+	 .invoice-box table tr.top table td.title {
+		 font-size: 45px;
+		 line-height: 45px;
+		 color: #333;
+	 }
+
+	 .invoice-box table tr.information table td {
+		 padding-bottom: 40px;
+	 }
+
+	 .invoice-box table tr.heading td {
+		 background: #eee;
+		 border-bottom: 1px solid #ddd;
+		 font-weight: bold;
+	 }
+
+	 .invoice-box table tr.details td {
+		 padding-bottom: 20px;
+	 }
+
+	 .invoice-box table tr.item td {
+		 border-bottom: 1px solid #eee;
+	 }
+
+	 .invoice-box table tr.item.last td {
+		 border-bottom: none;
+	 }
+
+	 .invoice-box table tr.total td:nth-child(2) {
+		 border-top: 2px solid #eee;
+		 font-weight: bold;
+	 }
+
+	 @media only screen and (max-width: 600px) {
+		 .invoice-box table tr.top table td {
+			 width: 100%;
+			 display: block;
+			 text-align: center;
+		 }
+
+		 .invoice-box table tr.information table td {
+			 width: 100%;
+			 display: block;
+			 text-align: center;
+		 }
+	 }
+
+	 /** RTL **/
+	 .invoice-box.rtl {
+		 direction: rtl;
+		 font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+	 }
+
+	 .invoice-box.rtl table {
+		 text-align: right;
+	 }
+
+	 .invoice-box.rtl table tr td:nth-child(2) {
+		 text-align: left;
+	 }
+ </style>";
+
+
+
+
+	$header = [
+		'Content-Type' => 'application/pdf',
+		'Content-Disposition' => 'inline: filename="' . $file_name . '"'];
+		$mpdf= new PDFF([
+			'mode' => "utf-8",
+			'format' => COMPANY_SIZE_PAPER,
+			'margin_header' => "5",
+			'margin_top' => "50",
+			'margin_bottom' => "15",
+			'margin_footer' => "2",
+		]);
+
+		$mpdf->SetHTMLHeader(COMPANY_Header);
+		$mpdf->SetHTMLFooter(COMPANY_Footer);
+		//$stylesheet = file_get_contents('stylesheet.css');
+
+        $mpdf->WriteHTML($stylesheet,1);
+       $mpdf->WriteHTML($To_be_rendered ,2);
+
+	   
+        $mpdf->showWatermarkText = true;
+		$mpdf->SetWatermarkText('Mekane Hiwot Clinic');
+		$mpdf->watermarkTextAlpha = 0.1;
+
+
+		// $mpdf->SetDisplayMode('fullpage');
+		// $mpdf->list_indent_first_level = 0; 
+
+
+		$file = $mpdf->Output($file_name, 'F');
+
+
+
+		$update_query = "update generate_invoice_print  set   `file_generated_name` = '$file_name'  where invoice_number = '$invoice_id' ";
+		$result_query = $mysqli->query($update_query);
+		
+
+			//if saving success
+	echo json_encode(array(
+		'status' => 'Success',
+		'Download' => $file_name, 
+		'mode' => 'Saved',
+		'renal_status' => 1,
+		'message'=> 'Renal Test has been saved successfully.'
+	));
+
+
+
+
+} else {
+	//if unable to create new record
+	echo json_encode(array(
+		'status' => 'Error',
+		//'message'=> 'There has been an error, please try again.'
+		'message' => '5There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$result_query.'</pre>'
+	));
+}
+//close database connection
+$mysqli->close();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if($action == 'create_renal_test')
 {
 
