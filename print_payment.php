@@ -123,9 +123,9 @@ $row_comp = $results_comp->fetch_assoc();
                 <div class='row invoice-info' >
 <div class='col-lg-12'    >
 
-<b> Company Name :</b> <span id="fullname_contact"> <?php echo $company_name ?>  </span> <br>
-<b> Invoice number:</b> <span id="receipt_number"><?php trim(getInvoiceId_print()); ?></span> <br>
-<b>Date of issuance:</b>  <span id="issuance_date"> <span id="current_date">  <?php  $Today = date('y/m/d'); $new = date('Y', strtotime($Today));
+<b> Company Name :    </b> <span id="company_name"> <?php echo $company_name ?>  </span> <br>
+<b> Invoice number:   </b> <span id="receipt_number"><?php trim(getInvoiceId_print()); ?></span> <br>
+<b> Date of issuance: </b>  <span id="issuance_date"> <span id="current_date">  <?php  $Today = date('y/m/d'); $new = date('Y', strtotime($Today));
   echo "<span style='color:orange;font-type:Monotype Corsiva;'>". $currentDate = date('d-m-Y')."</span>"; ?>  </span> 
 </div>
 <!-- /.col -->
@@ -151,7 +151,7 @@ $row_comp = $results_comp->fetch_assoc();
 
 								<td style="text-align:right">
 									Receiver Name Mr. :   <br />
-									Contract Type : <?php echo $row_comp['type_contract']; ?> <br >
+								 <?php echo $row_comp['type_contract']; ?> <br >
 									Juba, South Sudan
 								</td>
 							</tr>
@@ -299,13 +299,13 @@ $data_table = 'data-table';
 								   
 								   <tr>
           
-								   <th >Total Sum </th>
-								   <th></th>
-								   <th></th>
-								   <th></th>
-								   <th></th>
-								   <th></th>
-								   <th> ';
+								   <td >Total Sum </td>
+								   <td></td>
+								   <td></td>
+								   <td></td>
+								   <td > </td>
+								   <td></td>
+								   <td colspan="2" > ';
 								  
 								  if($General_Total >0 && $Status == 'open')
 								  {
@@ -336,7 +336,7 @@ $data_table = 'data-table';
 				 @$results->free();
 				 
 				 // close connection 
-				 @$mysqli->close();
+				// @$mysqli->close();
 				 
 				 
 				
@@ -344,7 +344,7 @@ $data_table = 'data-table';
 				?>
 				</table>
 
-        <p class="a"> <b> Amount in words: <?php print $numberTransformer->toWords($General_Total ); ?>  SSP ONLY   </b> </p>
+        <p class="a"  style="text-transform: uppercase;"> <b> Amount in words: <?php print $numberTransformer->toWords($General_Total ); ?>  SSP ONLY   </b> </p>
 <br/><br/>
 
   <p id="nmfa_info">
@@ -366,27 +366,84 @@ $data_table = 'data-table';
 			</table>
 		</div>
 </textarea>
-  
+</div>	
         <div class='row'>
-        <div class='col-12' table-responsive  >
+        <div class='col-12' table-responsive  style='position: relative;left: 45%; '>
 
-<button type="button" class="btn btn-primary float-md-left" 
-id="invoice_save"> <i class="fas fa-save"></i> Save  </button>
+<button type="button" [hidden]="true" class="btn btn-primary float-md-left"  id="invoice_save"> <i class="fas fa-save"></i> Save  </button>
 
 
 <a target="_blank" style="display:none" id="print_invoice"  href="" type="button" class="btn btn-primary btn-md float-right" > <i class="glyphicon glyphicon-download"></i> Download </a>
 
+<a href="{{ url()->previous() }}" type="button" class="btn btn-info float-md-right"   id="acknowledgment_letter"> <i class="fas fa-arrow-circle-left"></i> Back </a>
+  
+<a target="_blank" style="display:none"  href="" type="button" class="btn btn-success float-md-right"  id="downlod_file"> <i class="fas fa-download"></i> Download </a>
 
-
-
-<a href="{{ url()->previous() }}" type="button" class="btn btn-info float-md-right"  
-id="acknowledgment_letter"> <i class="fas fa-arrow-circle-left"></i> Back </a>
-          
 
 <br>  <br>  <br>
 
 
-        </div>
+</div>  </div>
+
+
+<div class="container mt-3">
+  <h2><?php echo $company_name ?> </h2>
+  <p>----</p>            
+  <table class="table table-dark table-striped" id="example">
+    <thead>
+      <tr>
+        <th>Invoice No</th>
+        <th>Generated Date</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody id="table_printed">
+     
+    <?php
+
+
+	 // the query
+   $table  = "";
+   $company_name = trim($company_name); 
+    $query = "SELECT  *  FROM  invoicemgsys.generate_invoice_print WHERE `company_name`  = '$company_name'  ORDER BY invoice_number  ASC  ";
+   // mysqli select query
+$results = $mysqli->query($query);  // mysqli select query
+if($results) {
+
+while($row = $results->fetch_assoc()) {
+
+
+
+
+print  '<tr> <td>'.$row["invoice_number"].'</td>';
+print '<td>'.$row["Date"].'</td>';
+print '<td><a target="_blank" style="display: block;" id="print_generated_file" href="'.$row["file_generated_name"].'" type="button" class="btn btn-primary btn-md float-right"><i class="fas fa-print"></i></a>
+</td></tr>';
+
+  }
+
+}
+
+?>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
         </div>
 
   <!-- Control Sidebar -->
@@ -445,10 +502,10 @@ else
     // $('#summernote_Remark_section_four').summernote();
 
     // CodeMirror
-    CodeMirror.fromTextArea(document.getElementById("codeMirrorDemo"), {
-      mode: "htmlmixed",
-      theme: "monokai"
-    });
+    // CodeMirror.fromTextArea(document.getElementById("codeMirrorDemo"), {
+    //   mode: "htmlmixed",
+    //   theme: "monokai"
+    // });
   });
 
 
@@ -458,14 +515,21 @@ else
    {
   
    var To_be_rendered = document.getElementById('to_be_print').innerHTML ; 
+
+   var company_name = document.getElementById('company_name').innerHTML; 
+
    var invoice_id = document.getElementById('invoice_id').value; 
+
+   var receipt_number = document.getElementById('receipt_number').innerHTML;
+
    var action = 'print_html';
 
-   alert(To_be_rendered );
 
-  
+
+ 
   
   document.getElementById('invoice_save').disabled = true;
+  
 
 
 
@@ -477,50 +541,37 @@ else
   
   action : action,
   To_be_rendered:To_be_rendered,
+  receipt_number : receipt_number,
   invoice_id:invoice_id,
+  company_name : company_name,
 
 },
-processData: true,
+dataType: 'json',
+//processData: true,
 success: (data) => {
-if(data.Message==true)  
+
+ 
+alert(data.Download);
+
+if(data.status == 'Success')  
 {
 
+document.getElementById('downlod_file').disabled = false;
+  $('#downlod_file').attr("href", data.Download);
+ document.getElementById('invoice_save').disabled = false;
 
-  $('#print_invoice').attr("href", data.Download);
-var Toast = Swal.mixin({
-              toast: true,
-              position: 'top-end',
-              showConfirmButton: false,
-              timer: 6000
-                  }); 
-                  
-                  document.getElementById('invoice_save').disabled = false;
+ document.getElementById('table_printed').innerHTML = data.print_table;
 
- toastr.success("Financial notification saved successfully")
- var id = setInterval(finance_not, 2000);
-              function finance_not() {
-              window.location = "/generating_financial_notifications";
-              clearInterval(id);
-        }
+
+
+
 
 } 
 else
 {
     
-this.reset();
- var Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 6000
-    }); 
+//this.reset();
 
-
-$('#UploadData').html('Save changes');
-document.getElementById('UploadData').disabled = false;
-var contact_person  = document.getElementById('contact_person_name').innerHTML;
-$('#app_name').val(contact_person.toUpperCase().trim());
-toastr.error('Allowed Files Type is only .PDF (PDF Document)')
 
            }
 },

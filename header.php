@@ -225,6 +225,10 @@ setInterval(function(){
             <?php } ?>
 
             <?php  if (in_array('3', $user_permission)) {?> 
+            <li><a href="receipts-list-today.php"><i class="fa fa-cab"></i>Today's Receipts</a></li>
+            <?php } ?>
+
+            <?php  if (in_array('3', $user_permission)) {?> 
             <li><a href="receipts-list.php"><i class="fa fa-cab"></i>Manage Receipts</a></li>
             <?php } ?>
 
@@ -268,9 +272,20 @@ setInterval(function(){
           </a>
           <ul class="treeview-menu">
 
+
+          <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
+            <li><a href="request_from_dr_for_labt_today.php"><i class="fa fa-cog"></i>Today's Request From Dr</a></li>
+            <?php } ?>
+
+
+            
           <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
             <li><a href="request_from_dr_for_lab.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
             <?php } ?>
+
+
+           
+
 
             <!-- <li><a href="posted-list.php"><i class="fa fa-cog"></i>Completed List</a></li> -->
            </ul>
@@ -359,7 +374,7 @@ setInterval(function(){
         <!-- Menu 4 -->
         <li class="treeview">
         <?php  if (in_array('14', $user_permission)) {?>
-          <a href="#"><i class="fa fa-user"></i><span>System Users</span>
+          <a href="#"><i class="fa fa-cog"></i><span>System Settings</span>
           <?php } ?>
             <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
@@ -374,6 +389,8 @@ setInterval(function(){
             <?php  if (in_array('15', $user_permission)) {?>
             <li><a href="user-list.php"><i class="fa fa-cog"></i>Manage Users</a></li>
             <?php } ?>
+
+            
 
           </ul>
         </li>

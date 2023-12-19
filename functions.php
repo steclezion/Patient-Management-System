@@ -6,8 +6,145 @@ include_once("includes/config.php");
 
 //get getReceipts
 
+function getReceipts_today(){
 
-// get invoice list
+// Connect to the database
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+$Today = date('y/m/d');
+$new = date('Y', strtotime($Today));
+$currentDate = date('Y-m-d');
+	 
+
+// the query
+$query = "SELECT  *  
+	FROM invoices i
+	JOIN customers c
+	ON c.invoice = i.invoice
+	WHERE i.invoice = c.invoice and  i.invoice_type = 'receipt' and i.invoice_date = '$currentDate'
+
+	ORDER BY i.invoice DESC ";
+
+// mysqli select query
+$results = $mysqli->query($query);
+
+
+
+// mysqli select query
+if($results) {
+
+	print '<table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
+
+			<th>Invoice</th>
+			<th>Patient</th>
+			<th>Issue Date</th>
+			<th>Due Date</th>
+			<th>Type</th>
+			<th>Status</th>
+			<th>Actions</th>
+
+		  </tr></thead><tbody>';
+
+	while($row = $results->fetch_assoc()) {
+
+	$search = '/';
+	$replace = '_';
+	$subject = $row["invoice"];
+
+	$invoice_number = str_replace($search, $replace, $subject);
+
+	$date=date_create($row["invoice_date"]);
+	$date_invoice  = date_format($date,"d-m-Y");
+
+	$date=date_create($row["invoice_date"]);
+	$date_due  = date_format($date,"d-m-Y");
+
+
+
+	
+
+
+		print '
+			<tr>
+				<td>'.$row["invoice"].'</td>
+				<td>'.$row["name"].'</td>
+				<td>'.$date_invoice .'</td>
+				<td>'.$date_due .'</td>
+				<td>'.$row["invoice_type"].'</td>
+			';
+
+			if($row['status'] == "open"){
+				print '<td><span class="label label-primary">'.$row['status'].'</span></td>';
+			} elseif ($row['status'] == "paid"){
+				print '<td><span class="label label-success">'.$row['status'].'</span></td>';
+			}
+			$user_permission = array(); 
+			$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+			
+			for($i =0; $i <= count($explode_comma_separated); $i++)
+			{
+			@array_push($user_permission,$explode_comma_separated[$i]);
+			}
+
+		print
+		
+		'<td>
+				
+				<a style="display:none" href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs" style="display:none">
+				<span hidden class="glyphicon glyphicon-edit" style="display:none" aria-hidden="true"></span></a>
+
+				<a style="display:none" href="#" hidden data-invoice-id="'.$row['invoice'].'" data-email="'.$row['email'].'" data-invoice-type="'.$row['invoice_type'].'" data-custom-email="'.$row['custom_email'].'" class="btn btn-success btn-xs email-invoice">
+				<span  style="display:none" class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a> 
+		';
+		
+		if ((in_array('4', $user_permission))) {
+			
+			print '<a href="invoices/'.$invoice_number.'.pdf" class="btn btn-info btn-xs" target="_blank">
+				<span class="glyphicon glyphicon-upload" aria-hidden="true"></span></a>';
+				
+}
+if ((in_array('17', $user_permission))) {
+print '&nbsp; <a data-invoice-id="'.$row['invoice'].'" class="btn btn-danger btn-xs delete-invoice">
+				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+}
+		'</td>
+			</tr>
+		';
+
+	}
+
+	print '</tr></tbody></table>';
+
+} else {
+
+	echo "<p>There are no invoices to display.</p>";
+
+}
+
+// Frees the memory associated with a result
+$results->free();
+
+// close connection 
+$mysqli->close();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+// get Receipts
 function getReceipts() {
 
 	// Connect to the database
@@ -131,6 +268,19 @@ if ((in_array('17', $user_permission))) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 // get invoice list
 function getInvoices() {
 
@@ -214,8 +364,8 @@ function getInvoices() {
 			print
 			
 			'<td>
-		        	<a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs">
-					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+		        	<!-- <a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs">
+					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a> --> 
 					
 			        <a style="display:none" href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs" style="display:none">
 					<span hidden class="glyphicon glyphicon-edit" style="display:none" aria-hidden="true"></span></a>
@@ -256,6 +406,364 @@ if ((in_array('17', $user_permission))) {
 
 }
 
+
+// getInvoices_from_DR_for_Lab_today
+
+
+function getInvoices_from_DR_for_Lab_today()
+{
+
+
+// Connect to the database
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+
+$Today = date('y/m/d');
+$new = date('Y', strtotime($Today));
+$currentDate = date('Y-m-d');
+$Labratory_Test  = '';
+
+// the query
+$query  = "	SELECT *,  invoices.invoice as inv, task_tracker.Timestamp as tam,    customers.id as cid, customers.name as cname,  task_tracker.id as transaction_id  FROM 
+invoices JOIN task_tracker 
+ON  invoices.invoice = task_tracker.task_tracker_related_id 
+JOIN customers 
+ON customers.invoice  = task_tracker.task_tracker_related_id 
+LEFT JOIN labaratory_test
+ON labaratory_test.invoice  = task_tracker.cashier_task_invoice_id 
+
+where invoices.invoice_date  = '$currentDate'
+ORDER BY task_tracker.Timestamp ASC";
+
+
+
+
+
+// mysqli select query
+$results = $mysqli->query($query);
+
+// mysqli select query
+if($results) {
+
+	print '<table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
+
+			<th width="10%">Transaction ID</th>		
+			<th>Invoice</th>
+			<th>Patient</th>
+			<th>Sender </th>
+			<th>Task Name</th>
+			<th>Requested Tests</th>
+			<th>Requested Date</th>
+			<th>Status</th>
+			<th>Actions</th>
+			</tr></thead><tbody>';
+
+	while($row = $results->fetch_assoc()) {
+
+	$search = '/';
+	$replace = '_';
+	$subject = $row["inv"];
+
+	$Sender_id   = $row['Sender_id'];
+
+
+	$dr_name = "SELECT * from users  where id  = $Sender_id   ";	 $results_dr = $mysqli->query($dr_name); $results_dr_name = $results_dr->fetch_assoc();
+
+
+	@$Get_main_task = explode(',',$row['main_task']);
+
+	if($Get_main_task[0] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= '<b> GENERAL TEST- </b>[<i style="color:orange">'.$row['Test_Type'].'&nbsp;</i> ]<br>';}
+	if(@$Get_main_task[1] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= '<b> LIPID-&nbsp;</b>';}
+	if(@$Get_main_task[2] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= '<b> LIVER- &nbsp;</b>';}
+	if(@$Get_main_task[3] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= '<b> RENAL- &nbsp;</b>';}
+
+
+	$invoice_number = str_replace($search, $replace, $subject);
+
+		print '
+			<tr>
+				<td>'.$row["transaction_id"].'</td>
+				<td>'.$row["inv"].'</td>
+				<td>'.$row["cname"].'</td>
+				<td>'.$results_dr_name ['name'].'</td>
+				<td>'.$row["task_tracker_name"].'</td>
+				<td>'.$Labratory_Test.'</td>
+		
+				<td><span class="label label-primary">'.$row["tam"].'</span></td>';
+				;
+				if($row['status'] == "requested"){
+					print '<td><span class="label label-primary">'.$row['status'].'</span></td>';
+				} elseif ($row['status'] == "Payment Finishied"){
+					print '<td><span class="label label-success">'.$row['status'].'</span></td>';
+				}
+
+			
+
+			$user_permission = array(); 
+			$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+			
+			for($i =0; $i <= count($explode_comma_separated); $i++)
+			{
+			@array_push($user_permission,$explode_comma_separated[$i]);
+			}
+
+
+	 if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {
+		//  print '<td> 
+		//  &nbsp; <a data-invoice-id="'.$row['invoice'].'" class="btn btn-warning  btn-xs ">
+		// 	    <span class="glyphicon glyphicon-edit" aria-hidden="true"> Process Payment</span></a></td>';
+
+
+		if($row['status'] == "requested")
+		{
+print '<td>
+
+
+<span class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-check" aria-hidden="true"> Waiting </span>
+
+&nbsp;</td>'; 
+		}
+		else if($row['status'] == "Payment Finishied" &&   $row['notify_to_dr'] == 0 )
+		{
+
+			$Today = date('y/m/d');
+$new = date('Y', strtotime($Today));
+$currentDate = date('Y-d-m');
+
+@$Get_main_task = explode(',',$row['main_task']);
+
+
+	if(@$Get_main_task[1] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= ' LIPID&nbsp';}
+	if(@$Get_main_task[2] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= 'LIVER- &nbsp';}
+	if(@$Get_main_task[3] ==0 ) { $Labratory_Test .= '';} else { $Labratory_Test .= ' RENAL- &nbsp';}
+
+
+
+			print '<td>
+
+		<a data-invoice-id="'.$row['transaction_id'].'"  
+		data-invoice-di="'.$row['cashier_task_invoice_id'].'" 
+		data-hematology="'.$Get_main_task[0].'" 
+		data-lipid="'.$Get_main_task[1].'" 
+		data-liver="'.$Get_main_task[2].'" 
+		data-renal="'.$Get_main_task[3].'" 
+
+		data-pname="'.$row['name'].'" 
+		data-page="'.$row['address_1'].'" 
+		data-gender="'.$row['address_2'].'" 
+		data-ptest_date="'.$currentDate.'" 
+		data-prefred_by="'.'Dr '.$row['name_ship'].'"
+		
+		
+		data-hematology_status="'.$row['hematology_status'].'" 
+		data-liver_status="'.$row['liver_status'].'" 
+		data-renal_status="'.$row['renal_status'].'" 
+		data-lipid_status="'.$row['lipid_status'].'" 
+
+		
+		data-lipid_generated_file_path="'.$row['lipid_generated_file_path'].'" 
+		data-tchol="'.$row['tchol'].'" 
+		data-tg = "'.$row['tg'].'" 
+		data-hdlc="'.$row['hdlc'].'" 
+		data-ldlc="'.$row['ldlc'].'" 
+
+
+		data-total_protien ="'.$row['total_protien'].'" 
+		data-alb= "'.$row['alb'].'" 
+		data-ggt="'.$row['ggt'].'" 
+		data-ast="'.$row['ast'].'" 
+		data-tbil="'.$row['tbil'].'" 
+		data-dbil="'.$row['dbil'].'" 
+		data-alp="'.$row['alp'].'" 
+		data-liver_generated_file="'.$row['liver_generated_file'].'" 
+
+
+		data-uric_acid="'.$row['uric_acid'].'" 
+		data-creatinine="'.$row['creatinine'].'" 
+		data-urea="'.$row['urea'].'" 
+		data-renal_generated_file="'.$row['renal_generated_file'].'" 
+
+
+		data-hgh="'.$row['Hgh'].'" 
+		data-bf_malaria="'.$row['bf_malaria'].'" 
+		data-TWBC ="'.$row['twbc'].'" 
+		data-diff="'.$row['diff_count'].'" 
+		data-vdrl="'.$row['vdrl'].'" 
+		data-widal="'.$row['widal'].'" 
+		data-others_hematology="'.$row['others_hematology'].'" 
+		data-reaction_color="'.$row['reaction_urine'].'" 
+		data-urine_Albumin="'.$row['albumin'].'" 
+		data-urine_sugar="'.$row['sugar'].'" 
+		data-urine_acetone="'.$row['acetone'].'" 
+		data-urine_bile_pigment="'.$row['bile_pigment'].'" 
+		data-pus_Cell_microsocopy="'.$row['pus_cell_microsopy'].'"
+		data-RBC ="'.$row['RBC'].'"  
+		data-crystal ="'.$row['crystall'].'" 
+		data-EPC="'.$row['EPC'].'" 
+		data-ova ="'.$row['Ova'].'" 
+		data-others="'.$row['other_microscopy'].'" 
+		data-RBS="'.$row['RBS'].'" 
+		data-ERS="'.$row['ERS'].'" 
+		data-Morphology="'.$row['Morphology'].'" 
+		data-HCG ="'.$row['HCG'].'" 
+		data-H_pylori="'.$row['H_Pylori'].'" 
+		data-Brucella_Test="'.$row['Brucella_test'].'" 
+		data-HGB="'.$row['Hgb'].'" 
+		data-color_stool="'.$row['color'].'" 
+		data-Consist ="'.$row['consist'].'" 
+		data-reaction ="'.$row['reaction'].'" 
+		data-Reaction="'.$row['renal_generated_file'].'" 
+		data-mucus="'.$row['mucus'].'" 
+		data-Blood= "'.$row['blood'].'" 
+		data-worms="'.$row['worms'].'" 
+		data-Pus_Cells_direct_microscopy ="'.$row['pus_cells_direct_microscopy'].'" 
+		data-RBCS ="'.$row['RBCS'].'" 
+		data-o_p="'.$row['O_P'].'" 
+	   data-general_test="'.$row['Test_Type'].'"  
+
+	   data-HIV="'.$row['HIV'].'"  
+	   data-HBV="'.$row['HBV'].'"  
+	   data-HCV="'.$row['HCV'].'"  
+	   data-FBS="'.$row['FBS'].'"  
+
+		data-hematology_generated_file_path="'.$row['hematology_generated_file_path'].'" 
+		data-Sender_id = "'.$row['Sender_id'].'" 
+		class="btn btn-warning btn-xs lab_request_from_dr">
+		
+		<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>Proceed Test</a>';
+		'</td>';
+
+			
+		}
+
+
+		else if($row['status'] == "Payment Finishied" &&   $row['notify_to_dr'] == 1 )
+		{
+
+			$Today = date('y/m/d');
+$new = date('Y', strtotime($Today));
+$currentDate = date('Y-d-m');
+
+			print '<td>
+
+		<a data-invoice-id="'.$row['transaction_id'].'"  
+		data-invoice-di="'.$row['cashier_task_invoice_id'].'" 
+		data-hematology="'.$Get_main_task[0].'" 
+		data-lipid="'.$Get_main_task[1].'" 
+		data-liver="'.$Get_main_task[2].'" 
+		data-renal="'.$Get_main_task[3].'" 
+
+		data-pname="'.$row['name'].'" 
+		data-page="'.$row['address_1'].'" 
+		data-gender="'.$row['address_2'].'" 
+		data-ptest_date="'.$currentDate.'" 
+		data-prefred_by="'.'Dr '.$row['name_ship'].'"
+		
+		
+		data-hematology_status="'.$row['hematology_status'].'" 
+		data-liver_status="'.$row['liver_status'].'" 
+		data-renal_status="'.$row['renal_status'].'" 
+		data-lipid_status="'.$row['lipid_status'].'" 
+
+		
+		data-lipid_generated_file_path="'.$row['lipid_generated_file_path'].'" 
+		data-tchol="'.$row['tchol'].'" 
+		data-tg = "'.$row['tg'].'" 
+		data-hdlc="'.$row['hdlc'].'" 
+		data-ldlc="'.$row['ldlc'].'" 
+
+
+		data-total_protien ="'.$row['total_protien'].'" 
+		data-alb= "'.$row['alb'].'" 
+		data-ggt="'.$row['ggt'].'" 
+		data-ast="'.$row['ast'].'" 
+		data-tbil="'.$row['tbil'].'" 
+		data-dbil="'.$row['dbil'].'" 
+		data-alp="'.$row['alp'].'" 
+		data-liver_generated_file="'.$row['liver_generated_file'].'" 
+
+
+		data-uric_acid="'.$row['uric_acid'].'" 
+		data-creatinine="'.$row['creatinine'].'" 
+		data-urea="'.$row['urea'].'" 
+		data-renal_generated_file="'.$row['renal_generated_file'].'" 
+
+
+		data-hgh="'.$row['Hgh'].'" 
+		data-bf_malaria="'.$row['bf_malaria'].'" 
+		data-TWBC ="'.$row['twbc'].'" 
+		data-diff="'.$row['diff_count'].'" 
+		data-vdrl="'.$row['vdrl'].'" 
+		data-widal="'.$row['widal'].'" 
+		data-others_hematology="'.$row['others_hematology'].'" 
+		data-reaction_color="'.$row['reaction_urine'].'" 
+		data-urine_Albumin="'.$row['albumin'].'" 
+		data-urine_sugar="'.$row['sugar'].'" 
+		data-urine_acetone="'.$row['acetone'].'" 
+		data-urine_bile_pigment="'.$row['bile_pigment'].'" 
+		data-pus_Cell_microsocopy="'.$row['pus_cell_microsopy'].'"
+		data-RBC ="'.$row['RBC'].'"  
+		data-crystal ="'.$row['crystall'].'" 
+		data-EPC="'.$row['EPC'].'" 
+		data-ova ="'.$row['Ova'].'" 
+		data-others="'.$row['other_microscopy'].'" 
+		data-RBS="'.$row['RBS'].'" 
+		data-ERS="'.$row['ERS'].'" 
+		data-Morphology="'.$row['Morphology'].'" 
+		data-HCG ="'.$row['HCG'].'" 
+		data-H_pylori="'.$row['H_Pylori'].'" 
+		data-Brucella_Test="'.$row['Brucella_test'].'" 
+		data-HGB="'.$row['Hgb'].'" 
+		data-color_stool="'.$row['color'].'" 
+		data-reaction ="'.$row['reaction'].'" 
+		data-Reaction="'.$row['renal_generated_file'].'" 
+		data-mucus="'.$row['mucus'].'" 
+		data-Blood= "'.$row['blood'].'" 
+		data-worms="'.$row['worms'].'" 
+		data-Pus_Cells_direct_microscopy ="'.$row['pus_cells_direct_microscopy'].'" 
+		data-RBCS ="'.$row['RBCS'].'" 
+		data-o_p="'.$row['O_P'].'" 
+
+		data-hematology_generated_file_path="'.$row['hematology_generated_file_path'].'" 
+		class="btn btn-success btn-xs lab_request_from_dr_done">
+			<span class="glyphicon glyphicon-check" aria-hidden="true"></span>Done</a>';
+
+			'</td>';
+
+			
+		}
+
+
+}
+	
+			'</tr>
+		';
+		$Labratory_Test ='';
+	}
+
+	print '</tr></tbody></table>';
+
+} else {
+
+	echo "<p>There are no invoices to display.</p>";
+
+}
+
+// Frees the memory associated with a result
+@$results->free();
+
+// close connection 
+@$mysqli->close();
+
+
+
+
+}
 
 
 //getInvoices_from_DR_for_Lab
@@ -1301,7 +1809,7 @@ $query = "SELECT invoice_number FROM generate_invoice_print ORDER BY invoice_num
            echo  "INV/".trim($new),"/ORG/0001";
 		} else {
             $Get_the_number = explode('/',$row['invoice_number']);
-			$count_squence = $Get_the_number[2] + 1;
+			$count_squence = $Get_the_number[3] + 1;
 
 		   $zero_filled_counter = sprintf('%04d',$count_squence);
 			

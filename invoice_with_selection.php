@@ -418,12 +418,12 @@ if( ($Status == 'open' || $Status == 'paid' ) && $Company != 'All' )
 
                         $General_Total=0;
                           
-                          $company_name = $rsdepartment['name'];
+                          @$company_name = $rsdepartment['name'];
                           $data_table = 'data-table';
     
   
         // the query
-       $query = "SELECT  *  FROM invoices i  
+      echo  $query = "SELECT  *  FROM invoices i  
            JOIN customers c  ON c.invoice = i.invoice
    
       WHERE  ( i.invoice = c.invoice and i.invoice_type = 'invoice' )  

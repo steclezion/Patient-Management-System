@@ -455,9 +455,25 @@ if($action == 'print_html')
 	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
 
 
-	$To_be_rendered      =       $_POST['To_be_rendered'];
-    $invoice_id   =       $_POST['invoice_id'];
+	$To_be_rendered     =      $_POST['To_be_rendered'];
+    $invoice_id         =      $_POST['invoice_id'];
+	$receipt_number     =      $_POST['receipt_number'];
+	$company_name       =      $_POST['company_name'];
+
+
+
+
+
+	 $Today = date('y/m/d'); 
+	 $new = date('Y', strtotime($Today));
+     $currentDate = date('d/m/Y'); 
 	
+	 $invoice_date = $currentDate; // invoice date
+	$inv_date =  explode('/',$invoice_date);
+	$inv_date = $inv_date[2]."-".$inv_date[1]."-".$inv_date[0];
+    
+	$date=date_create($inv_date);
+	$currentDate = date_format($date,"Y-m-d");
 
 
 
@@ -471,6 +487,11 @@ if($action == 'print_html')
 		$result_name = $result_query->fetch_assoc();
 		$name =  $result_name['name'] ;
 	
+		$user_name = $_SESSION['login_username'];; 
+
+
+		
+
 		
 	
 		$date = new DateTime(); // For today/now, don't pass an arg.
@@ -606,7 +627,7 @@ if($action == 'print_html')
         $mpdf->WriteHTML($stylesheet,1);
        $mpdf->WriteHTML($To_be_rendered ,2);
 
-	   
+
         $mpdf->showWatermarkText = true;
 		$mpdf->SetWatermarkText('Mekane Hiwot Clinic');
 		$mpdf->watermarkTextAlpha = 0.1;
@@ -618,19 +639,46 @@ if($action == 'print_html')
 
 		$file = $mpdf->Output($file_name, 'F');
 
+		$company_name = trim($company_name);
 
+	 $insert_query = "INSERT INTO generate_invoice_print ( `invoice_number`,`company_name`,`html_data`, `file_generated_name`, `Date`, `Who`) 
+		                 VALUES ('$receipt_number','$company_name','--','$file_name','$currentDate','$user_name')";
 
-		$update_query = "update generate_invoice_print  set   `file_generated_name` = '$file_name'  where invoice_number = '$invoice_id' ";
-		$result_query = $mysqli->query($update_query);
-		
+	     $result_query = $mysqli->query($insert_query);
 
-			//if saving success
+         $table = "";
+
+ 
+						 // the query
+						 $query = "SELECT  *  FROM  generate_invoice_print WHERE `company_name`  = '$company_name'  ORDER BY invoice_number  ASC  ";
+                        // mysqli select query
+				        $results = $mysqli->query($query);  // mysqli select query
+				        if($results) {
+
+	                while($row = $results->fetch_assoc()) {
+							
+					
+						
+						
+						$table .=  '<tr> <td>'.$row["invoice_number"].'</td>';
+						$table .= '<td>'.$row["Date"].'</td>';
+			$table .= '<td><a target="_blank" style="display: block;" id="print_generated_file" href="'.$row["file_generated_name"].'" type="button" class="btn btn-primary btn-md float-right"><i class="fas fa-print"></i></a>
+									</td></tr>';
+						
+	                     }
+
+						}
+								
+								
+		//if saving success
 	echo json_encode(array(
 		'status' => 'Success',
+		'Message' => 1,
 		'Download' => $file_name, 
 		'mode' => 'Saved',
-		'renal_status' => 1,
-		'message'=> 'Renal Test has been saved successfully.'
+		'print_status' => 'printed',
+		'print_table' => $table, 
+		'message'=> 'Print Invoice  has been saved successfully.'
 	));
 
 
@@ -641,7 +689,7 @@ if($action == 'print_html')
 	echo json_encode(array(
 		'status' => 'Error',
 		//'message'=> 'There has been an error, please try again.'
-		'message' => '5There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$result_query.'</pre>'
+		'Message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$result_query.'</pre>'
 	));
 }
 //close database connection

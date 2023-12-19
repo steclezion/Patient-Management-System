@@ -2641,7 +2641,7 @@ var Quote = 'Quote';
 
 					//setInterval(invoice_create, 2000); quote receipt invoice
                  if(data.invoice_type == 'quote ')  {  var invoice_type = 'receipts-list.php'; } 
-				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'receipts-list.php'; } 
+				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'receipts-list-today.php'; } 
 				 else if (data.invoice_type == 'invoice') {  var invoice_type = 'invoice-list.php'; } 
 
 					setInterval( function() { invoice_create(invoice_type); }, 2000 );
