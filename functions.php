@@ -2,7 +2,8 @@
 
 
 include_once("includes/config.php");
-
+require( 'vendor/fastload/DataTables/server-side/scripts/ssp.class.php' );
+ 
 
 //get getReceipts
 
@@ -137,15 +138,10 @@ $mysqli->close();
 
 
 
+//Get Receipt from Pharmecutical Medicines sales
 
 
-
-
-
-
-
-// get Receipts
-function getReceipts() {
+function getBalances() {
 
 	// Connect to the database
 	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
@@ -160,7 +156,7 @@ function getReceipts() {
 		FROM invoices i
 		JOIN customers c
 		ON c.invoice = i.invoice
-		WHERE i.invoice = c.invoice and  i.invoice_type = 'receipt' 
+		WHERE i.invoice = c.invoice and  i.invoice_type = 'receipt'  and invoice_which = 'Regular-Pharmacy'
 
 		ORDER BY i.invoice DESC ";
 
@@ -172,17 +168,17 @@ function getReceipts() {
 	// mysqli select query
 	if($results) {
 
-		print '<table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
+		print ' <table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
 
-				<th>Invoice</th>
-				<th>Patient</th>
-				<th>Issue Date</th>
-				<th>Due Date</th>
-				<th>Type</th>
-				<th>Status</th>
-				<th>Actions</th>
+		<th>Invoice</th>
+		<th>Patient</th>
+		<th>Issue Date</th>
+		<th>Due Date</th>
+		<th>Type</th>
+		<th>Status</th>
+		<th>Actions</th>
 
-			  </tr></thead><tbody>';
+	  </tr></thead><tbody';
 
 		while($row = $results->fetch_assoc()) {
 
@@ -235,7 +231,140 @@ function getReceipts() {
 			if ((in_array('4', $user_permission))) {
 				
 				print '<a href="invoices/'.$invoice_number.'.pdf" class="btn btn-info btn-xs" target="_blank">
-					<span class="glyphicon glyphicon-upload" aria-hidden="true"></span></a>';
+					<span class="glyphicon glyphicon-upload" aria-hidden="true"></span></a>&nbsp;&nbsp;';
+
+					print '<a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs">
+					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+					
+					';
+					
+}
+if ((in_array('17', $user_permission))) {
+    print '&nbsp; <a data-invoice-id="'.$row['invoice'].'" class="btn btn-danger btn-xs delete-invoice">
+				    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+}
+			'</td>
+			    </tr>
+			';
+
+		}
+
+		print '</tr></tbody></table>';
+
+	} else {
+
+		echo "<p>There are no invoices to display.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+}
+
+
+
+
+// get Receipts
+function getReceipts() {
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+		die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+    $query = "SELECT  *  
+		FROM invoices i
+		JOIN customers c
+		ON c.invoice = i.invoice
+		WHERE i.invoice = c.invoice and  i.invoice_type = 'receipt' 
+
+		ORDER BY i.invoice DESC ";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+
+
+	// mysqli select query
+	if($results) {
+
+		print ' <table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
+
+		<th>Invoice</th>
+		<th>Patient</th>
+		<th>Issue Date</th>
+		<th>Due Date</th>
+		<th>Type</th>
+		<th>Status</th>
+		<th>Actions</th>
+
+	  </tr></thead><tbody';
+
+		while($row = $results->fetch_assoc()) {
+
+		$search = '/';
+		$replace = '_';
+		$subject = $row["invoice"];
+
+		$invoice_number = str_replace($search, $replace, $subject);
+
+		$date=date_create($row["invoice_date"]);
+		$date_invoice  = date_format($date,"d-m-Y");
+
+		$date=date_create($row["invoice_date"]);
+		$date_due  = date_format($date,"d-m-Y");
+
+
+			print '
+				<tr>
+					<td>'.$row["invoice"].'</td>
+					<td>'.$row["name"].'</td>
+				    <td>'.$date_invoice .'</td>
+				    <td>'.$date_due .'</td>
+				    <td>'.$row["invoice_type"].'</td>
+				';
+
+				if($row['status'] == "open"){
+					print '<td><span class="label label-primary">'.$row['status'].'</span></td>';
+				} elseif ($row['status'] == "paid"){
+					print '<td><span class="label label-success">'.$row['status'].'</span></td>';
+				}
+				$user_permission = array(); 
+				$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+				
+				for($i =0; $i <= count($explode_comma_separated); $i++)
+				{
+				@array_push($user_permission,$explode_comma_separated[$i]);
+				}
+
+			print
+			
+			'<td>
+					
+			        <a style="display:none" href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs" style="display:none">
+					<span hidden class="glyphicon glyphicon-edit" style="display:none" aria-hidden="true"></span></a>
+
+					<a style="display:none" href="#" hidden data-invoice-id="'.$row['invoice'].'" data-email="'.$row['email'].'" data-invoice-type="'.$row['invoice_type'].'" data-custom-email="'.$row['custom_email'].'" class="btn btn-success btn-xs email-invoice">
+					<span  style="display:none" class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a> 
+			';
+			
+			if ((in_array('4', $user_permission))) {
+				
+				print '<a href="invoices/'.$invoice_number.'.pdf" class="btn btn-info btn-xs" target="_blank">
+					<span class="glyphicon glyphicon-upload" aria-hidden="true"></span></a>&nbsp;&nbsp;';
+
+					print '<a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-primary btn-xs">
+					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+					
+					';
 					
 }
 if ((in_array('17', $user_permission))) {
@@ -1307,9 +1436,198 @@ if($results) {
 }
 
 
+//// getInvoices of Pharmacy from DR
+
+function  getInvoicesPharmacy_from_DR() {
+
+
+// Connect to the database
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+
+$Today = date('y/m/d');
+$new = date('Y', strtotime($Today));
+$currentDate = date('Y-d-m');
+$Labratory_Test  = '';
+
+// the query
+ $query  = "SELECT *,  COUNT(t.task_tracker_related_id) as Number_invoices, c.name as cname , m.medicine_name as medname,
+            t.id as tid, t.status as tstatus,  t.task_tracker_related_id as tidn , t.quantity as tquantity ,
+			 t.task_tracker_description as tdesc , t.Timestamp as tt , u.name as uname , c.name as patient_name ,c.id as cid
+            FROM  task_tracker_pharmacy t 
+	  JOIN customers c ON c.invoice = t.task_tracker_related_id
+	  Join medicine m ON m.medicine_id = t.medicine_id
+	  JOIN users  u ON u.id  = t.Sender_id 
+	  left join balance_invoices ba on ba.old_invoice_id =  t.task_tracker_related_id
+	  WHERE t.status = 'Submited'
+      Group by t.task_tracker_related_id
+	   ORDER BY t.task_tracker_related_id ASC";
+
+
+$Medicine_name= '';
+
+
+// mysqli select query
+$results = $mysqli->query($query);
+
+// mysqli select query
+if($results) {
+
+	print '<table class="table table-striped table-hover table-bordered" id="data-table" cellspacing="0"><thead><tr>
+
+			<th width="10%">Transaction ID</th>		
+			<th>Invoice</th>
+			<th>Patient</th>
+			<th>Sender </th>
+			<th>Task Name</th>
+			<!-- <th>Requested Medicines</th> -->
+			<th>Requested Date</th>
+			<th>Payment Status</th>
+			
+			<th>Actions</th>
+
+		  </tr></thead><tbody>';
+
+	while($row = $results->fetch_assoc()) {
+		$inv_id = $row['tidn'];
+    //   $query_balance = "SELECT * FROM balance_invoices where old_invoice_id='$inv_id' order by id DESC  ";
+    //   $results_query_balance = $mysqli->query($query_balance);
+	//   $result_balance_query = $results_query_balance->fetch_row();
+
+
+$query_check_tests = "SELECT *,m.medicine_name as medname, c.name as cname , t.id as tid, t.status as tstatus,  t.task_tracker_related_id as tidn , t.quantity as tquantity , t.task_tracker_description as tdesc , t.Timestamp as tt , u.name as uname
+	  FROM  task_tracker_pharmacy t 
+			JOIN customers c ON c.invoice = t.task_tracker_related_id
+            Join medicine m ON m.medicine_id = t.medicine_id
+			JOIN users  u ON u.id  = t.Sender_id 
+			Join balance_invoices b on b.old_invoice_id = t.task_tracker_related_id
+			WHERE t.task_tracker_related_id = '$inv_id' order by tid ASC ";
+
+
+	   $results_query_check_list = $mysqli->query( $query_check_tests);
+	    while($row_results_query_check_list = $results_query_check_list->fetch_assoc()){
+		$Medicine_name.=$row_results_query_check_list['medname'].",<br>";
+	  }
+
+	print '
+		     	<tr>
+				<td>'.$row["tid"].'</td>
+				<td>'.$row["tidn"].'</td>
+				<td>'.$row["patient_name"].'</td>
+	            <td>'.$row["uname"].'</td>
+			    <td><span class="label label-primary">Prescription</span></td>
+				<!-- <td><h5><b> Requested Medicines <span class="label label-default"></span></b> </h5> </td>-->
+				<td>'.$row["tt"].'</td>';
+				
+			  
+		       
+				if($row['payment_status'] == "Pending")
+				{
+		print '<td> <a type="hidden"  class="btn btn-info btn-xs"><span class="glyphicon glyphicon-eye-open" aria-hidden="true">Pending</span></a> &nbsp;</td>'; 
+				}
+				else if($row['payment_status'] == "Payment Finished")
+				{
+		//print '<td> <span class="btn btn-success btn-xs"><span class="glyphicon glyphicon-check" aria-hidden="true"> Payment Finished </span> &nbsp;</td>';
+		print '<td><a style="display:block" href="#" data-invoice-id="'.$row["tidn"].'"   class="btn btn-success btn-xs partial-paid"> <span  class="glyphicon glyphicon-check" aria-hidden="true">Payment Finished </span></a> </td>';
+
+	}
+				else if($row['payment_status'] == "Partial Paid")
+				{
+	//	print '<td> <span type="button" class="close" data-dismiss="modal" aria-label="Close" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-check" aria-hidden="true"> Partial Paid </span> &nbsp;</td>';
+              
+		print '<td><a style="display:block" href="#" data-invoice-id="'.$row["tidn"].'"   class="btn btn-primary btn-xs partial-paid"> <span  style="display:block class="glyphicon glyphicon-check" aria-hidden="true">Partial Paid </span></a> </td>';
+
+	
+	}
+
+
+				if($row['payment_status'] == "Pending")
+				{
+					if($row['remained_balance'] == ''){
+print '<td> <a type="button" href="invoice-create_from_request_pharmacy.php?customer_id='.$row["cid"].'*'.$row["tid"].'*'.$row["tidn"].'*'.$Medicine_name.'" class="btn btn-warning btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true">Process Payment</span></a> &nbsp;</td>'; 
+				                                           }
+				   else if(($row['remained_balance']) > 0  ){
+print '<td> 
+<a style="display:block" href="invoice-edit.php?id='.$row["invoice_id"].'*'.$row["tidn"].'" class="btn btn-primary btn-xs" style="display:block"> <span  class="glyphicon glyphicon-edit" style="display:block" aria-hidden="true">End Payment</span></a>
+
+
+</td>'; 
+
+ }
+
+ else if(($row['remained_balance']) == 0  ){
+	print '<td> 
+	<a style="display:block" href="#" class="btn btn-success btn-xs" style="display:block">
+	<span  class="glyphicon glyphicon-check" style="display:block" aria-hidden="true">Done</span></a>
+	</td>'; 
+	
+	 }
+
+			}
+				else if($row['payment_status'] == "Payment Finished")
+				{
+		print '<td> <span class="btn btn-success btn-xs"><span class="glyphicon glyphicon-check" aria-hidden="true"> Done </span> &nbsp;</td>';
+                }
+
+				else if($row['payment_status'] == "Partial Paid")
+				{
+					if($row['remained_balance'] == ''){
+						print '<td> <a type="button" href="invoice-create_from_request_pharmacy.php?customer_id='.$row["cid"].'*'.$row["tid"].'*'.$row["tidn"].'*'.$Medicine_name.'" class="btn btn-warning btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true">Process Payment</span></a> &nbsp;</td>'; 
+																				   }
+										   else if(($row['remained_balance']) > 0  ){
+						print '<td> 
+						<a style="display:block" href="invoice-edit.php?customer_id='.$row["cid"].'*'.$row["tid"].'*'.$row["tidn"].'*'.$Medicine_name.'" class="btn btn-primary btn-xs" style="display:block">
+											<span  class="glyphicon glyphicon-edit" style="display:block" aria-hidden="true">End Payment</span></a>
+						</td>'; 
+						
+						 }
+						
+						 else if(($row['remained_balance']) == 0  ){
+							print '<td> 
+							<a style="display:block" href="#" class="btn btn-success btn-xs" style="display:block">
+												<span  class="glyphicon glyphicon-check" style="display:block" aria-hidden="true">Done</span></a>
+							</td>'; 
+							
+							 }                }
+		
+           print '</tr>';
 
 
 
+
+
+
+
+
+
+
+		   $Medicine_name="";
+	}
+
+	print '</tr></tbody></table>';
+
+} else {
+
+	echo "<p>There are no invoices to display.</p>";
+
+}
+
+// Frees the memory associated with a result
+//@$results->free();
+
+// close connection 
+//@$mysqli->close();
+
+
+
+
+
+}
 
 
 
@@ -1644,7 +1962,7 @@ if ($mysqli->connect_error) {
 
 
 
-$query = "SELECT  *  , i.status as invstat , t.status as tstatus FROM invoices i JOIN customers c ON c.invoice = i.invoice left JOIN task_tracker t ON c.invoice  = t.task_tracker_related_id 
+$query = "SELECT  *  ,  i.status as invstat , t.status as tstatus FROM invoices i JOIN customers c ON c.invoice = i.invoice left JOIN task_tracker t ON c.invoice  = t.task_tracker_related_id 
  WHERE (  i.assigned_lab_technicians <> 0   and  i.invoice_registration = 'new' ) ORDER BY i.invoice DESC ";
 
 // mysqli select query
@@ -1660,8 +1978,7 @@ if($results) {
 			<th>Issue Date</th>
 			<th>Type</th>
 			<!--<th>cashier status</th> -->
-			
-			<th>Status</th>
+            <th>Status</th>
 			<th>Actions</th>
 
 		  </tr></thead><tbody>';
@@ -1684,7 +2001,7 @@ if($results) {
 		
 		} elseif ($row['tstatus'] == "Payment Finishied" && $row['Lab_status'] == 1 ){
 			
-			$style = "style='background-color: ";
+			$style = "style='background-color:green ";
 		}
 
 	 elseif ($row['tstatus'] == "Payment Finishied" && $row['Lab_status'] == 0 ){
@@ -1700,7 +2017,7 @@ if($results) {
 	$invoice_number = str_replace($search, $replace, $subject);
 
 		print '
-			<tr '.@$style.'>
+			<tr $style>
 				<td>'.$row["invoice"].'</td>
 				<td>'.$row["name"].'</td>
 				<td>'.$row["invoice_date"].'</td>
@@ -1751,10 +2068,11 @@ if($results) {
 				
 				
 }
-// if ((in_array('17', $user_permission))) {
-// print '&nbsp; <a data-invoice-id="'.$row['invoice'].'" class="btn btn-danger btn-xs delete-invoice">
-// 				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
-// }
+if ((in_array('4', $user_permission))) {
+print '&nbsp; 
+<a data-invoice-id="'.$row['invoice'].'" 
+class="btn btn-primary btn-xs prescribe-patient"> <span class="glyphicon glyphicon-home" aria-hidden="true">Prescribe</span></a>';
+}
 		'</td>
 			</tr>
 		';
@@ -1872,6 +2190,66 @@ function getInvoiceId() {
 	}
 	
 }
+
+
+// populate product dropdown for invoice creation
+function popProductsList_Pharmacy() {
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+	$query = "SELECT * FROM medicine ORDER BY medicine_id ASC";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+	if($results) {
+		echo '<select style="display:block;width:570px;"  id="products_insert" class="form-control item-select  select2bs4 required">';
+		
+
+		while($row = $results->fetch_assoc()) {
+
+		    print '<option   value="'.$row['rate'].'">'.$row["medicine_name"].'</option>';
+		}
+		echo '</select>';
+
+	} else {
+
+		echo "<p>There are no medicines , please add a medicine.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // populate product dropdown for invoice creation
 function popProductsList() {
@@ -2049,6 +2427,208 @@ function getProcedure() {
 }
 
 
+// get Manufacturer list
+function getcategory() 
+{
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+	$query = "SELECT * FROM categories ORDER BY categories_id ASC";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+	$user_permission = array(); 
+
+	$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+	for($i =0; $i <= count($explode_comma_separated); $i++)
+	{
+	@array_push($user_permission,$explode_comma_separated[$i]);
+	}
+
+
+	if($results) {
+		$i=1;
+		print '<table class="table table-striped table-hover table-bordered" id="data-table"><thead><tr>
+		<th>ID</th>
+				<th>Categories Name</th>
+				<th>Catogories Status</th>
+				<!--<th>Price</th> -->
+				<th>Action</th>
+                 </tr></thead><tbody>';
+
+		while($row = $results->fetch_assoc()) {
+              if($row["categories_active"] == '1') {$active="Available";} else {$active ='Unavailable';}
+		    print '
+			    <tr>
+				<td>'.$i++.'</td>
+					<td>'.$row["categories_name"].'</td>
+				    <td>'.$active.'</td>
+				   
+				    <td>';
+
+					if ((in_array('7', $user_permission))) {
+					print '<a href="categories-edit.php?id='.$row["categories_id"].'" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>&nbsp;'; 
+					}
+					if ((in_array('18', $user_permission))) {
+    print '<a data-category-id="'.$row['categories_id'].'" class="btn btn-danger btn-xs delete-category"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+}
+
+			    '
+				</td> </tr>
+		    ';
+		}
+
+		print '</tr></tbody></table>';
+
+	} else {
+
+		echo "<p>There are no products to display.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// get Manufacturer list
+function getManufacturer() 
+{
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+	$query = "SELECT * FROM brands ORDER BY brand_id ASC";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+	$user_permission = array(); 
+
+	$explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+	for($i =0; $i <= count($explode_comma_separated); $i++)
+	{
+	@array_push($user_permission,$explode_comma_separated[$i]);
+	}
+
+
+	if($results) {
+		$i=1;
+		print '<table class="table table-striped table-hover table-bordered" id="data-table"><thead><tr>
+		<th>ID</th>
+				<th>Manufacturer</th>
+				<th>Status</th>
+				<!--<th>Price</th> -->
+				<th>Action</th>
+                 </tr></thead><tbody>';
+
+		while($row = $results->fetch_assoc()) {
+              if($row["brand_active"] == '1') {$active="Active";} else {$active ='Inactive';}
+		    print '
+			    <tr>
+				<td>'.$i++.'</td>
+					<td>'.$row["brand_name"].'</td>
+				    <td>'.$active.'</td>
+				   
+				    <td>';
+
+					if ((in_array('7', $user_permission))) {
+					print '<a href="manufacturer-edit.php?id='.$row["brand_id"].'" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>&nbsp;'; 
+					}
+					if ((in_array('18', $user_permission))) {
+    print '<a data-manufacturer-id="'.$row['brand_id'].'" class="btn btn-danger btn-xs delete-manufacturer"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+}
+
+			    '
+				</td> </tr>
+		    ';
+		}
+
+		print '</tr></tbody></table>';
+
+	} else {
+
+		echo "<p>There are no products to display.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // get products list
@@ -2203,6 +2783,202 @@ function getUsers() {
 	// close connection 
 	$mysqli->close();
 }
+
+
+//getStockAdjust
+
+function getStockAdjust()
+{
+
+// Connect to the database
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+// output any connection error
+if ($mysqli->connect_error) {
+	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+// the query
+$query = "SELECT *  FROM  stock_adjustment s
+JOIN  medicine m  ON s.medicine_id  = m.medicine_id	
+
+ORDER BY s.medicine_id ASC";
+
+// mysqli select query
+$results = $mysqli->query($query);
+
+if($results) {
+	$j=1;
+
+
+	print '<table class="table table-striped table-hover table-bordered" id="data-table"><thead><tr>
+			 <th>ID</th>
+			<th>Date</th>
+				<th>Medicine Name </th>
+			<th>Reference No </th>
+			<th>Location </th>
+			<th>Adjustment Type</th>
+			<th>Quantity onHand </th>
+			<th>Quantity Counted </th>
+			<th>Quantity Difference </th>
+			<th>Reason</th>
+			<th>Added By</th>
+			
+			<th>Action</th>
+
+		  </tr></thead><tbody>';
+
+		  $user_permission = array(); 
+		  $explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+		  
+		  for($i =0; $i <= count($explode_comma_separated); $i++)
+		  {
+		  @array_push($user_permission,$explode_comma_separated[$i]);
+		  }
+
+	while($row = $results->fetch_assoc()) {
+		$uid = $row['who'];
+		$sqlduname= "SELECT * FROM users  where id =$uid  ";
+		$results_med_uname = $mysqli->query($sqlduname);
+		$sqlrow_fetch  =$results_med_uname->fetch_assoc();
+
+		print '
+			<tr>
+				<td>'.$j++.'</td>
+				<td>'.$row["date_added"].'</td>
+				<td>'.$row["medicine_name"].'</td>
+                <td>'.$row["reference_no"].'</td>
+				<td>'.$row["location"].'</td>
+				<td>'.$row["adjustment_type"].'</td>
+				<td style="color:green">'.$row["quantity_on_hand"].'</td>
+				<td>'.$row["quantity_counted"].'</td>
+				<td>'.$row["quantity_difference"].'</td>
+				<td>'.$row["reason"].'</td>
+	
+				<td>'.$sqlrow_fetch['name'].'</td>
+			
+				<td>';
+
+					if ((in_array('10', $user_permission))) {
+			//	print '<a href="medicine-edit.php?id='.$row["medicine_id"].'" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>&nbsp;';
+					}
+
+					if ((in_array('19', $user_permission))) {
+			 print ' <a data-stock-id="'.$row['id'].'" data-quantity-id="'.$row['quantity_on_hand'].'" data-medicine_id-id="'.$row['medicine_id'].'" class="btn btn-danger btn-xs delete-stock"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+					}
+			
+			  ' </td>
+			</tr>
+		';
+	}
+
+	print '</tr></tbody></table>';
+
+} else {
+
+	echo "<p>There are no customers to display.</p>";
+
+}
+
+// Frees the memory associated with a result
+@$results->free();
+
+// close connection 
+$mysqli->close();
+}
+
+//getMedicine
+function getMedicine() {
+
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+	$query = "SELECT *, b.brand_name as manufacturer_name FROM medicine m
+	JOIN brands b ON b.brand_id = m.brand_id 
+	JOIN categories c ON c.categories_id = m.categories_id	
+	
+	ORDER BY m.medicine_id ASC";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+	if($results) {
+		$j=1;
+		print '<table class="table table-striped table-hover table-bordered" id="data-table"><thead><tr>
+		         <th>ID</th>
+				<th>Name</th>
+				<th>Image </th>
+				<th>Manufacturer Name</th>
+				<th>Category</th>
+				<th>Quantity-On Hand </th>
+				<th>Rate</th>
+				<th>MRP</th>
+				<th>Bno</th>
+				<th>Expire Date</th>
+				<th>Action</th>
+
+			  </tr></thead><tbody>';
+
+			  $user_permission = array(); 
+			  $explode_comma_separated = explode(",", $_SESSION['User_Permission']);
+			  
+			  for($i =0; $i <= count($explode_comma_separated); $i++)
+			  {
+			  @array_push($user_permission,$explode_comma_separated[$i]);
+			  }
+
+		while($row = $results->fetch_assoc()) {
+               
+		    print '
+			    <tr>
+				    <td>'.$j++.'</td>
+					<td>'.$row["medicine_name"].'</td>
+<td><img title="profile picture" width="50" height="50" id="preview-image" src="medicines_image/'.$row["medicine_image"].'" alt="preview image" style="max-height: 250px;"></td>
+				    <td>'.$row["manufacturer_name"].'</td>
+					<td>'.$row["categories_name"].'</td>
+					<td style="color:green">'.$row["quantity"].'</td>
+					<td>'.$row["rate"].'</td>
+					<td>'.$row["mrp"].'</td>
+					<td>'.$row["bno"].'</td>
+					<td>'.date("d-m-Y",strtotime($row["expdate"])).'</td>
+				
+				    <td>';
+
+						if ((in_array('10', $user_permission))) {
+					print '<a href="medicine-edit.php?id='.$row["medicine_id"].'" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>&nbsp;';
+						}
+
+						if ((in_array('19', $user_permission))) {
+				 print ' <a data-medcine-id="'.$row['medicine_id'].'" class="btn btn-danger btn-xs delete-medicine"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>';
+						}
+
+				  ' </td>
+			    </tr>
+		    ';
+		}
+
+		print '</tr></tbody></table>';
+
+	} else {
+
+		echo "<p>There are no customers to display.</p>";
+
+	}
+
+	// Frees the memory associated with a result
+	@$results->free();
+
+	// close connection 
+	$mysqli->close();
+}
+
+
 
 // get user list
 function getCustomers() {

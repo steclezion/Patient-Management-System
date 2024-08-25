@@ -1,6 +1,14 @@
 <?php
+//declare(strict_types=1);
 // Debugging
 ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 'TRUE');
+error_reporting(-1); // MAXIMUM ERROR REPORTING
+
+// TO BE REMOVED AFTER ESTABLISHING THE VERSION
+//echo phpversion(); die;
+
+
 
 // DATABASE INFORMATION
 define('DATABASE_HOST', getenv('IP'));
@@ -53,7 +61,7 @@ define('DISCOUNT', 'readonly'); // Currency symbol
 define('ENABLE_VAT', false); // Enable TAX/VAT
 define('VAT_INCLUDED', false); // Is VAT included or excluded?
 define('VAT_RATE', '10'); // This is the percentage value
-
+define('PID', 'BETIEL'); // This is the starting counting number of Elements
 
 define('PAYMENT_DETAILS', 'Mekane-Hiwot Invoice Mg System.<br>Location: Mahta-Yei<br>email:mekae_hiwot_123@gmail.com'); // Payment information
 
@@ -82,6 +90,7 @@ $conn = mysqli_connect($servername, $username, $password, $dbname);
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
+
 
 
 

@@ -14,6 +14,8 @@ $l['vat'] 							= 'Vat';
 $l['total'] 						= 'Total';
 $l['page'] 							= 'Page';
 $l['page_of'] 						= 'of';
+$l['balance'] 	                    =  'Balance';
+$l['Customer_paid'] 	            =  'Patient Paid';
 
 
 

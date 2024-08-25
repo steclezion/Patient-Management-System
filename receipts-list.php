@@ -16,6 +16,47 @@ if ((in_array('3', $user_permission))) {
 
     ?>
 
+
+<script src="vendor/fastlaod/jquery/jquery-3.2.1.min.js"></script>
+
+<link rel="stylesheet"  href="vendor/fastlaod/DataTables/jquery.datatables.min.css">	
+<script src="vendor/fastlaod/DataTables/jquery.dataTables.min.js" type="text/javascript"></script> 
+
+<link href="style.css" rel="stylesheet" type="text/css" />
+
+<script>
+        $(document).ready(function ()
+        {
+            $('#tbl-contact thead th').each(function () {
+                var title = $(this).text();
+                $(this).html(title+' <input type="text" class="col-search-input" placeholder="Search ' + title + '" />');
+            });
+            
+            var table = $('#employee').DataTable({
+                	"scrollX": true,
+            		"pagingType": "numbers",
+                "processing": true,
+                "serverSide": true,
+                "ajax": "vendor/server.php",
+                order: [[2, 'asc']],
+                columnDefs: [{
+                    targets: "_all",
+                    orderable: false
+                 }]
+            });
+
+            table.columns().every(function () {
+                var table = this;
+                $('input', this.header()).on('keyup change', function () {
+                    if (table.search() !== this.value) {
+                    	   table.search(this.value).draw();
+                    }
+                });
+            });
+        });
+
+    </script>
+
 <h1>Receipts List</h1>
 <hr>
 
@@ -33,6 +74,7 @@ if ((in_array('3', $user_permission))) {
 				<h4>Manage Receipts</h4>
 			</div>
 			<div class="panel-body form-group form-group-sm">
+     
 				<?php getReceipts(); ?>
 			</div>
 		</div>

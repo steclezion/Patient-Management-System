@@ -123,6 +123,7 @@ $mysqli->close();
 						<option <?php if($user_type=='HeadNurse'){ echo 'selected'; } ?> value="HeadNuse">Head Nurse</option>
 						<option <?php if($user_type=='Labaratory'){ echo 'selected'; } ?> value="Labaratory">Laboratory Technician</option>
 						<option <?php if($user_type=='Doctor'){ echo 'selected'; } ?> value="Doctor">Doctor</option>
+						<option <?php if($user_type=='Pharmacy'){ echo 'selected'; } ?> value="Doctor">Pharmacy</option>
 						<option <?php if($user_type=='Admin'){ echo 'selected'; } ?> value="Admin">Administrator</option>
 			
 						

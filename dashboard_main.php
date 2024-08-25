@@ -155,6 +155,7 @@
 
 
         <div class="col-lg-3 col-xs-6">
+
           <!-- small box -->
           <div class="small-box bg-olive">
             <div class="inner">
@@ -181,11 +182,135 @@
               <p>Total Daily sales / Logged User</p>
 
             </div>
-            
-            
-          </div>
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+            </div>
+
+
         </div>
 
+
+
+        <div class="col-lg-3 col-xs-6">
+          
+          <!-- small box -->
+          <div class="small-box bg-aqua-active">
+            <div class="inner">
+            <h3><?php
+
+
+
+
+       $Today = date('y/m/d');
+       $new = date('Y', strtotime($Today));
+
+    $currentDate = date('Y-m-d');
+
+   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+    $query = $mysqli->query($sql);
+
+    @$row = mysqli_fetch_assoc($query);
+    $sum = $row['Total_sales'];
+
+    echo  number_format($sum)."\n";
+
+    ?></h3>
+
+              <p>Total Medicines </p>
+
+            </div>
+
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+            </div>
+
+
+        </div>
+
+
+
+
+        
+
+        <div class="col-lg-3 col-xs-6">
+          
+          <!-- small box -->
+          <div class="small-box bg-blue-gradient">
+            <div class="inner">
+            <h3><?php
+
+
+
+
+       $Today = date('y/m/d');
+       $new = date('Y', strtotime($Today));
+
+    $currentDate = date('Y-m-d');
+
+   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+    $query = $mysqli->query($sql);
+
+    @$row = mysqli_fetch_assoc($query);
+    $sum = $row['Total_sales'];
+
+    echo  number_format($sum)."\n";
+
+    ?></h3>
+
+              <p>Total Manufactures </p>
+
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+
+            </div>
+
+
+        </div>
+
+
+        
+        <div class="col-lg-3 col-xs-6">
+          
+          <!-- small box -->
+          <div class="small-box bg-green-gradient">
+            <div class="inner">
+            <h3><?php
+
+
+
+
+       $Today = date('y/m/d');
+       $new = date('Y', strtotime($Today));
+
+    $currentDate = date('Y-m-d');
+
+   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+    $query = $mysqli->query($sql);
+
+    @$row = mysqli_fetch_assoc($query);
+    $sum = $row['Total_sales'];
+
+    echo  number_format($sum)."\n";
+
+    ?></h3>
+
+              <p>Total Invoice - Pharmacy </p>
+
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+
+            </div>
+
+
+        </div>
+
+        
       </div>
       
      

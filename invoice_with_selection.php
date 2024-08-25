@@ -423,10 +423,10 @@ if( ($Status == 'open' || $Status == 'paid' ) && $Company != 'All' )
     
   
         // the query
-      echo  $query = "SELECT  *  FROM invoices i  
+        $query = "SELECT  *  FROM invoices i  
            JOIN customers c  ON c.invoice = i.invoice
    
-      WHERE  ( i.invoice = c.invoice and i.invoice_type = 'invoice' )  
+      WHERE  ( i.invoice = c.invoice and i.invoice_type = 'invoice'  )  
           and   (c.company_name = '$Company') 
           and    ( i.invoice_date between '$From' and '$To')
           and (i.status = '$Status')

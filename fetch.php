@@ -21,6 +21,7 @@ while($row = mysqli_fetch_array($result))
 
    if($row["subject"] == 'Lab Request') {$link = 'request_from_dr_for_lab.php';} 
    if($row["subject"] == 'Lab Request submission to Dr') {$link = 'posted-list.php';} 
+   if($row["subject"] == 'New Prescription') {$link = 'posted-list.php';} 
   $output .= '
   <li>
   <a href="'.$link.'">

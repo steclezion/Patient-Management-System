@@ -82,6 +82,7 @@ if ((in_array('14', $user_permission))) {
 						<option value="HeadNuse">Head Nurse</option>
 						<option value="Labaratory">Laboratory Technician</option>
 						<option value="Doctor">Doctor</option>
+						<option value="Pharmacy">Pharmacist</option>
 						<option value="Admin">Administrator</option>
 					
 					    </select>

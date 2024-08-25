@@ -1,6 +1,19 @@
 <?php
 	//check login
 	include("session.php");
+
+  $_SESSION['login_username'];
+  $id = $_SESSION['login_user_id'];
+
+//$_SESSION['login_user_id'];
+$query = "SELECT * FROM `users` WHERE id  = $id ";
+$result_query = $mysqli->query($query);
+$result_name = $result_query->fetch_assoc();
+$name =  $result_name['name'] ;
+
+$user_name = $_SESSION['login_username'];; 
+
+
 ?>
 
 
@@ -50,6 +63,7 @@
 	<link rel="stylesheet" href="css/jquery.dataTables.css">
 	<link rel="stylesheet" href="css/dataTables.bootstrap.css">
 	<link rel="stylesheet" href="css/styles.css">
+  
 
     <!-- Select2 -->
   
@@ -278,7 +292,7 @@ setInterval(function(){
             <?php } ?>
 
 
-            
+
           <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
             <li><a href="request_from_dr_for_lab.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
             <?php } ?>
@@ -348,6 +362,120 @@ setInterval(function(){
             <?php } ?>
           </ul>
         </li>
+
+
+        <li class="treeview">
+        <?php  if (in_array('11', $user_permission)) {?>
+          <a href="#"><i class="fa fa-users"></i><span>Pharmacy </span>
+          <?php } ?>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+          <?php  if (in_array('11', $user_permission)) {?>
+
+            <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Manufactures  <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span></a>
+            
+            <ul class="treeview-menu">
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="add_manufactures.php"><i class="fa fa-cog"></i>Add Manufactures</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="manage_manufactures.php"><i class="fa fa-cog"></i>Manage Manufactures</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="pharmacy_list.php"><i class="fa fa-cog"></i>Import Manufactures</a>
+          </li>
+            <?php } ?>
+
+          </ul>
+ </li>
+           
+
+
+            <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Categories  <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span></a>
+            
+            <ul class="treeview-menu">
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="add_categories.php"><i class="fa fa-cog"></i>Add Categories</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="categories-list.php"><i class="fa fa-cog"></i> Manage Categories</a>
+          </li>
+            <?php } ?>
+          </ul>
+          </li>
+
+
+          <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Medicines  <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span></a>
+            
+            <ul class="treeview-menu">
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="medicine-add.php"><i class="fa fa-cog"></i>Add Medicines</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="medicine-list.php"><i class="fa fa-cog"></i>Manage Medicines</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="List_stock_Adjustments.php"><i class="fa fa-cog"></i>Stock Adjustment</a>
+          </li>
+            <?php } ?>
+          </ul>
+          </li>
+
+
+          
+          <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Invoices  <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span></a>
+            
+            <ul class="treeview-menu">
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="invoice-create-pharmacy.php"><i class="fa fa-cog"></i>Create Invoice</a>
+          </li>
+            <?php } ?>
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="request_from_dr-pharmacy.php"><i class="fa fa-cog"></i>Request from Dr-Prescribed </a>
+          </li>
+            <?php } ?>
+
+            <?php  if (in_array('12', $user_permission)) {?>
+            <li><a href="receipts-list-today-pharmacy.php"><i class="fa fa-cog"></i>Manage Invoice-pharmacy</a>
+          </li>
+            <?php } ?>
+          </ul>
+          </li>
+
+
+
+
+
+
+
+
+            <?php } ?>
+     
+
+
+
+
+
+          </ul>
+        </li>
+
+
 
 
         <li class="treeview">

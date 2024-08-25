@@ -375,7 +375,7 @@ $data_table = 'data-table';
 
 <a target="_blank" style="display:none" id="print_invoice"  href="" type="button" class="btn btn-primary btn-md float-right" > <i class="glyphicon glyphicon-download"></i> Download </a>
 
-<a href="{{ url()->previous() }}" type="button" class="btn btn-info float-md-right"   id="acknowledgment_letter"> <i class="fas fa-arrow-circle-left"></i> Back </a>
+<a href="invoice-proceed_payments.php" type="button" class="btn btn-info float-md-right"   id="acknowledgment_letter"> <i class="fas fa-arrow-circle-left"></i> Back </a>
   
 <a target="_blank" style="display:none"  href="" type="button" class="btn btn-success float-md-right"  id="downlod_file"> <i class="fas fa-download"></i> Download </a>
 

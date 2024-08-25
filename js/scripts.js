@@ -57,7 +57,25 @@ $(document).ready(function () {
 		// Load dataTables
 		$("#data-tablee").dataTable();
 
-	// add product
+	
+		// add Manufacturer
+	$("#action_add_manu").click(function (e) {
+	   e.preventDefault();
+		actionAddManu()
+	});
+
+	//Add categories 
+
+	$("#action_add_category").click(function (e){
+
+		e.preventDefault();
+		actionAddcategories(); 
+
+	});
+
+
+
+      // add product
 	$("#action_add_product").click(function (e) {
 		e.preventDefault();
 		actionAddProduct();
@@ -102,14 +120,80 @@ $(document).ready(function () {
 		});
 	});
 
+	//fill_patient
+
+	$(document).on('click', "#fill_patient", function (e) {
+		e.preventDefault();
+
+		
+		var invoice_total = document.getElementById('invoice_total').value;
+
+		document.getElementById('invoice_patient_paying').value = invoice_total ;
+
+		document.getElementById('invoice_balance').innerHTML = 0.00;
+		//invoice_bala
+
+		document.getElementById('invoice_bala').value = 0.00;
+		
+
+	});
+
+
+
+	//prescribe-patient
+
+	$(document).on('click', ".prescribe-patient", function (e) {
+		e.preventDefault();
+
+		var invoice_id = $(this).attr('data-invoice-id');
+		document.getElementById('responsee').style.display='none'; 
+		//document.getElementsByClassName('messagee').innerHTML = ''; 
+
+		document.getElementById('invoice_id_').value= invoice_id;
+		var userId = 'action=&delete=' + $(this).attr('data-invoice-id'); //build a post data structure
+		var traId = 'action=retrieve_tranaction_data_pharmacy&Transaction=' + $(this).attr('data-invoice-id'); //build a post data structure
+		var tra = $(this);
+		var user = $(this);
+
+
+		$('#prescribe-patient').modal({
+			backdrop: 'static',
+			keyboard: false
+		}).one('click', '#delete', function () {
+			//deleteCustomer(userId);
+			$(user).closest('tr').remove();
+		});
+
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: traId,
+			dataType: 'json',
+			success: function (data) {
+				document.getElementById('pname').innerHTML = data.pname;
+						document.getElementById('invid').innerHTML = data.invid;
+			document.getElementById('table_Dr_request_Phar').innerHTML = data.data_returned;
+
+			},
+			error: function (data) {
+				
+				$btn.button("reset");
+			}
+		});
+
+	});
+
+
+
 	// delete customer
 	$(document).on('click', ".delete-customer", function (e) {
 		e.preventDefault();
 
 		var userId = 'action=delete_customer&delete=' + $(this).attr('data-customer-id'); //build a post data structure
 		var user = $(this);
-
-		$('#delete_customer').modal({
+  $('#delete_customer').modal({
 			backdrop: 'static',
 			keyboard: false
 		}).one('click', '#delete', function () {
@@ -117,6 +201,249 @@ $(document).ready(function () {
 			$(user).closest('tr').remove();
 		});
 	});
+
+
+
+//delete-stock
+$(document).on('click', ".delete-stock", function (e) {
+	e.preventDefault();
+
+	var userId = 'action=delete_stock&delete=' + $(this).attr('data-stock-id') + '&medicine_id=' + $(this).attr('data-medicine_id-id')+ '&quantity_onHand='+ $(this).attr('data-quantity-id'); //build a post data structure
+
+
+	var user = $(this);
+
+	$('#delete_stock').modal({
+		backdrop: 'static',
+		keyboard: false
+	}).one('click', '#delete', function () {
+		deleteStock(userId);
+		$(user).closest('tr').remove();
+	});
+});
+
+
+
+
+//delete-trid
+
+$(document).on('click', ".delete-trid", function (e) {
+	e.preventDefault();
+
+	var userId = 'action=delete_tra&delete=' + $(this).attr('data-invoice-id') + '&Transaction='+$(this).attr('data-inv-id');
+	document.getElementById('responsee').style.display='none'; 
+	//document.getElementsByClassName('messagee').innerHTML = ''; 
+
+	if (confirm("Are you sure you wanted to delete this row?")){
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: userId,
+			dataType: 'json',
+			success: function (data) {
+				document.getElementById('table_Dr_request_Phar').innerHTML = data.data_returned;
+
+				$("#responsee .messagee").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#responsee").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#responsee').offset().top
+				}, 1000);
+				//$btn.button("reset");
+				
+
+
+
+			},
+			error: function (data) {
+				$("#responsee .messagee").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#responsee").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#responsee').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+		});
+	
+	 }else { return false; }
+
+});
+
+
+
+
+
+	$(document).on('click', ".delete-medicine", function (e) {
+		e.preventDefault();
+
+		var userId = 'action=delete_medicine&delete=' + $(this).attr('data-medcine-id') + '&medicine_id'; //build a post data structure
+		
+		var user = $(this);
+
+		$('#delete_medicine').modal({
+			backdrop: 'static',
+			keyboard: false
+		}).one('click', '#delete', function () {
+			deleteMedicine(userId);
+			$(user).closest('tr').remove();
+		});
+	});
+
+
+	function deleteStock(UserID){
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: UserID,
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				//$btn.button("reset");
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+		});
+
+	}
+
+	function deleteMedicine(UserID)
+	{
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: UserID,
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				//$btn.button("reset");
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+		});
+
+
+	}
+
+//delete-category
+$(document).on('click', ".delete-category", function (e) {
+	e.preventDefault();
+
+
+	var CatId = 'action=delete-category&delete=' + $(this).attr('data-category-id'); //build a post data structure
+	var user = $(this);
+
+	$('#delete_category').modal({
+		backdrop: 'static',
+		keyboard: false
+	}).one('click', '#delete', function () {
+		deletecategory(CatId);
+		$(user).closest('tr').remove();
+	});
+});
+
+function deletecategory(CatId) {
+
+	jQuery.ajax({
+
+		url: 'response.php',
+		type: 'POST',
+		data: CatId,
+		dataType: 'json',
+		success: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+			//$btn.button("reset");
+		},
+		error: function (data) {
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+			$btn.button("reset");
+		}
+	});
+
+}
+
+
+
+
+		// delete Manufacturer
+		$(document).on('click', ".delete-manufacturer", function (e) {
+			e.preventDefault();
+
+
+			var ManuId = 'action=delete_manufacturer&delete=' + $(this).attr('data-manufacturer-id'); //build a post data structure
+			var user = $(this);
+	
+			$('#delete_manufacturer').modal({
+				backdrop: 'static',
+				keyboard: false
+			}).one('click', '#delete', function () {
+				deleteManufacturer(ManuId);
+				$(user).closest('tr').remove();
+			});
+		});
+
+		function deleteManufacturer(ManuId) {
+
+			jQuery.ajax({
+	
+				url: 'response.php',
+				type: 'POST',
+				data: ManuId,
+				dataType: 'json',
+				success: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+					//$btn.button("reset");
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+					$btn.button("reset");
+				}
+			});
+	
+		}
+
+
+
+
+		
+
 
 	//delete-company
 	
@@ -179,6 +506,22 @@ $(document).on('click', "#action_update_company", function (e) {
 		e.preventDefault();
 		updateProduct();
 	});
+
+//action_update_Categories
+
+
+	$(document).on('click', "#action_update_Categories", function (e) {
+		e.preventDefault();
+		updateCategories();
+	});
+
+
+
+		// update Manufacturer
+		$(document).on('click', "#action_update_manufacturer", function (e) {
+			e.preventDefault();
+			updateManufacturer();
+		});
 
 	// login form
 	$(document).bind('keypress', function (e) {
@@ -1110,7 +1453,8 @@ if( renal_status  == 1) {
 			console.log(data);
 			}
 			
-			});
+			}
+		);
 
 
 
@@ -1230,6 +1574,184 @@ if( renal_status  == 1) {
 	});
 
 
+//action_create_medicine
+$("#action_create_medicine").click(function (e) {
+	e.preventDefault();
+	action_create_medicine();
+});
+
+
+
+$('#MedicineImage').change(function() {
+
+	let reader = new FileReader();
+	reader.onload = (e) => {
+		$('#preview-image').attr('src', e.target.result);
+	}
+	reader.readAsDataURL(this.files[0]);
+
+});
+
+// //submit_changes_stock
+// $("#submit_changes_stock").click(function (e) {
+// 	e.preventDefault();
+// 	submit_changes_stock();
+// });
+
+
+
+
+
+	//add_stock_adjust
+
+	$(document).on('click', ".add_stock_adjust", function (e) {
+		e.preventDefault();
+
+		var userId = 'action=delete_medicine&delete=' + $(this).attr('data-medcine-id'); //build a post data structure
+		var user = $(this);
+
+		$('#add_stock_adjustment').modal({
+			backdrop: 'static',
+			keyboard: false
+		}).one('click', '#submit_changes_stock', function () {
+			submit_changes_stock();
+
+			//$(user).closest('tr').remove();
+		});
+	});
+
+
+
+function submit_changes_stock()
+{
+
+
+	function submit_changes_stock() {
+		window.location = "List_stock_Adjustments.php";
+	}
+
+	var errorCounter = validateForm();
+
+	if (errorCounter > 0) {
+		$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+		$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+		$("html, body").animate({
+			scrollTop: $('#response').offset().top
+		}, 1000);
+	} else {
+
+		var $btn = $("#submit_changes_stock").button("loading");
+
+		$(".required").parent().removeClass("has-error");
+
+	
+	
+		$.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: $("#submitStockForm").serialize(),
+			dataType: 'json',
+			success: function (data) {
+				
+			
+
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+
+				setInterval(submit_changes_stock, 2500);
+
+				$("#add_stock_adjustment").remove();
+				$btn.button("reset");
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+
+		});
+	}
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+ function action_create_medicine()
+ {
+
+
+	function medicine_list_page() {
+		window.location = "medicine-list.php";
+	}
+
+	var errorCounter = validateForm();
+
+	if (errorCounter > 0) {
+		$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+		$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+		$("html, body").animate({
+			scrollTop: $('#response').offset().top
+		}, 1000);
+	} else {
+
+		var $btn = $("#action_create_medicine").button("loading");
+
+		$(".required").parent().removeClass("has-error");
+
+		var fd= new FormData();
+		var files = $('#MedicineImage')[0].files[0];
+		fd.append('file',files);
+		var  filee = document.getElementById('MedicineImage').value;
+	
+	
+		$.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: $("#MedicineForm").serialize(),
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$("#MedicineForm").before().html("<a href='./medicine-list.php' class='btn btn-primary'>Add New Medicne</a>");
+				setInterval(medicine_list_page, 2500);
+				$("#MedicineForm").remove();
+				$btn.button("reset");
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+
+		});
+	}
+
+
+
+ }
 
 
 	
@@ -2044,7 +2566,7 @@ $.ajax({
 
 
 		$('#insert').modal({
-			backdrop: 'static',
+			//backdrop: 'static',
 			keyboard: true
 		}).one('click', '#selected', function (e) {
 
@@ -2076,7 +2598,8 @@ $.ajax({
 			var price = $(product).closest('tr').find('.invoice_product_price').val();
 			subtotal = parseInt(quantity) * parseFloat(price);
 			$(product).closest('tr').find('.invoice_product_sub').val(subtotal);
-			//$(product).closest('tr').find('.invoice_product_discount').attr('readonly', false);
+
+			//$(product).closest('tr').find('.invoice_product_discount').attr('readonly', true);
 
 
 			var Discount = $(product).closest('tr').find('.invoice_product_discount').val();
@@ -2177,6 +2700,508 @@ $.ajax({
 	});
 
 
+	// create invoice from pharmacy 
+	$("#action_create_invoice_from_pharmacy").click(function (e) {
+		e.preventDefault();
+		action_create_invoice_from_pharmacy();
+	});
+
+	//action_create_invoice_from_pharmacy_new
+	$("#action_create_invoice_from_pharmacy_new").click(function (e) {
+		e.preventDefault();
+		action_create_invoice_from_pharmacy_new();
+	});
+	  
+
+function action_create_invoice_from_pharmacy_new()
+{
+
+	var errorCounter = validateForm();
+	if (errorCounter > 0) {
+		$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+		$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+		$("html, body").animate({
+			scrollTop: $('#response').offset().top
+		}, 1000);
+	} else {
+
+		
+
+
+		var $btn = $("#action_create_invoice_from_pharmacy_new").button("loading");
+
+		$(".required").parent().removeClass("has-error");
+		$("#create_invoice_from_pharmacy_new").find(':input:disabled').removeAttr('disabled');
+
+
+		function invoice_create(page_link) {
+			window.location =   page_link  ;
+		}
+
+
+
+		$.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: $("#create_invoice_from_pharmacy_new").serialize(),
+			dataType: 'json',
+			success: function (data) {
+				$("#create_invoice_new").before().html("<a href='receipts-list-today-pharmacy.php' class='btn btn-primary'>Create new invoice</a>");
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+
+				//setInterval(invoice_create, 2000); quote receipt invoice
+			 if(data.invoice_type == 'quote ')  {  var invoice_type = 'receipts-list-today-pharmacy.php'; } 
+			 else if (data.invoice_type == 'receipt') {  var invoice_type = 'receipts-list-today-pharmacy.php'; } 
+			 else if (data.invoice_type == 'invoice') {  var invoice_type = 'receipts-list-today-pharmacy.php'; } 
+
+				setInterval( function() { invoice_create(invoice_type); }, 2000 );
+
+
+
+				$("#create_invoice_from_pharmacy_new").remove();
+				$btn.button("reset");
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+
+
+				$btn.button("reset");
+			}
+
+		});
+	}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// payingcustomer
+	$("#invoice_patient_paying").keyup(function (e) {
+		//e.preventDefault();
+		var element = $('#invoice_patient_paying').val();
+		var invoice_balance = 'invoice_balance';
+		var total = $('#invoice_total').val();
+	  
+		payingcustomer(element,invoice_balance,total);
+	});
+
+
+		// payingcustomer
+		$("#invoice_patient_paying").change(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying').val();
+			var invoice_balance = 'invoice_balance';
+			var total = $('#invoice_total').val();
+		  
+			payingcustomer(element,invoice_balance,total);
+		});
+
+
+		// payingcustomer
+		$("#invoice_patient_paying").keydown(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying').val();
+			var invoice_balance = 'invoice_balance';
+			var total = $('#invoice_total').val();
+	
+	
+			payingcustomer(element,invoice_balance,total);
+		});
+
+
+
+
+		$("#invoice_patient_paying_edit").change(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying_edit').val();
+			var invoice_balance = 'invoice_balance';
+			var limited_price = $('#invoice_bala').val();
+		  
+			payingcustomer_edit(element,invoice_balance,limited_price);
+		});
+
+
+		// payingcustomer_edit
+		$("#invoice_patient_paying_edit").keydown(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying_edit').val();
+			var invoice_balance = 'invoice_balance';
+			var limited_price = $('#invoice_bala').val();
+		  
+			payingcustomer_edit(element,invoice_balance,limited_price);
+		});
+
+		$("#invoice_patient_paying_edit").keyup(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying_edit').val();
+			var invoice_balance = 'invoice_balance';
+			var limited_price = $('#invoice_bala').val();
+		  
+			payingcustomer_edit(element,invoice_balance,limited_price);
+		});
+
+		$("#invoice_patient_paying_edit").keyup(function (e) {
+			//e.preventDefault();
+			var element = $('#invoice_patient_paying_edit').val();
+			var invoice_balance = 'invoice_balance';
+			var limited_price = $('#invoice_bala').val();
+		  
+			payingcustomer_edit(element,invoice_balance,limited_price);
+		});
+		
+
+
+
+		function payingcustomer_edit(element,invoice_balance,limited_price)
+		{
+			var at_hand =  parseInt(limited_price)- element;
+			document.getElementById('invoice_balance').innerHTML = at_hand;
+			document.getElementById('remained_final_balance').value = at_hand;
+
+			//document.getElementById('invoice_bala').value = at_hand
+	
+			if(at_hand <= -1) { alert("Dear user Check the value please negative value are not accepted");  document.getElementById('action_edit_invoice_pharmacy').disabled=true; return false;} 
+			 else { document.getElementById('action_edit_invoice_pharmacy').disabled=false; return false; }
+	
+	
+	
+		}
+
+
+
+
+
+	function payingcustomer(element,invoice_balance,total)
+	{
+		var at_hand =  parseInt(total)- element;
+	    document.getElementById('invoice_balance').innerHTML = at_hand;
+		document.getElementById('invoice_bala').value = at_hand
+
+		if(at_hand <= -1) { alert("Dear user Check the value please negative value are not accepted");  document.getElementById('action_create_invoice_from_pharmacy').disabled=true; return false;} 
+		 else { document.getElementById('action_create_invoice_from_pharmacy').disabled=false; return false; }
+
+
+
+	}
+
+
+	//action_create_invoice_from_pharmacy
+
+	function action_create_invoice_from_pharmacy(){
+
+   var errorCounter = validateForm();
+        if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			
+		var invoice_patient_paying = document.getElementById('invoice_patient_paying').value;
+		if(invoice_patient_paying == '')
+		  {
+			  alert("Fill customer bills" );              
+			  document.getElementById('invoice_patient_paying').focus();
+			  return false;
+		  }
+
+		  var total = parseFloat($('.invoice-total').html());
+		  var customer_paying = parseInt($('#invoice_patient_paying').val()) ;
+		  var least_payment = total/2;
+	  if(  customer_paying < least_payment  )
+		  {
+			  alert("Dear user Customer Payment should be at least half of the total amount at initial payment, In this case ==" + least_payment);
+			  return false;
+		  }
+
+
+			var $btn = $("#action_create_invoice_from_pharmacy").button("loading");
+
+			$(".required").parent().removeClass("has-error");
+			$("#create_invoice_from_pharmacy").find(':input:disabled').removeAttr('disabled');
+
+
+			function invoice_create(page_link) {
+				window.location =   page_link  ;
+			}
+
+
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#create_invoice_from_pharmacy").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					$("#create_invoice").before().html("<a href='invoice-list.php' class='btn btn-primary'>Create new invoice</a>");
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+					//setInterval(invoice_create, 2000); quote receipt invoice
+                 if(data.invoice_type == 'quote ')  {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+				 else if (data.invoice_type == 'invoice') {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+
+					setInterval( function() { invoice_create(invoice_type); }, 2000 );
+
+
+
+					$("#create_invoice_from_pharmacy").remove();
+					$btn.button("reset");
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+
+
+
+
+	}
+
+
+
+		// create Inquiry to Pharmacy Section  action_send_to_pharmacy
+		$("#action_send_to_pharmacy").click(function (e) {
+			e.preventDefault();
+			action_send_to_pharmacy();
+		});
+
+      //Submit_to_pharmacy 
+	  $("#Submit_to_pharmacy").click(function (e) {
+		
+
+		e.preventDefault();
+		Submit_to_pharmacy();
+	});
+
+
+
+	$(document).on('click', ".partial-paid", function (e) {
+		e.preventDefault();
+
+		var action = 'action=retirieve_balance&invoice=' + $(this).attr('data-invoice-id'); //build a post data structure
+		var user = $(this);
+
+		$('#check_balance').modal({
+			backdrop: 'static',
+			keyboard: false
+		});
+
+		retrieve_balance(action);
+	});
+
+
+
+	//partial-paid
+
+		function retrieve_balance(action) {
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: action,
+			dataType: 'json',
+			success: function (data) {
+				document.getElementById('retrieve_value_from_balance').innerHTML = data.data_returned;
+				return false;
+			},
+			error: function (data) {
+			}
+		});
+
+
+		$('#check_balance').modal({
+			//backdrop: 'static',
+			keyboard: true
+		});
+
+
+}
+
+
+function Submit_to_pharmacy(){
+
+	var online_pharmacy = document.getElementById('online_pharmacy').value; 
+
+	var inv_id = document.getElementById('invid').innerHTML; 
+	 if(online_pharmacy ==  0 )
+	{ alert ("Choose online Pharmacist From the system please!!");document.getElementById('online_pharmacy').focus(); return false};
+    var inv_id = inv_id.trim(); 
+	var action = 'Submit_to_pharmacy';
+
+
+	 $.ajax({
+	
+		url: 'response.php',
+		type: 'POST',
+		data: {
+			online_pharmacy : online_pharmacy,
+			inv_id : inv_id,
+			action : action,
+			
+
+		},
+		dataType: 'json',
+		success: function (data) {
+
+			var priority = 'success';
+			//	var title    = 'From Labarotry';
+			//	var message  = data.message;
+	
+				setTimeout(function(){
+					$.toaster({ priority : data.priority, title : data.title, message : data.message_toast });
+				
+				}, 500);
+	
+				document.getElementById('table_Dr_request_Phar').innerHTML = data.data_returned;
+
+
+
+			//document.getElementById('modal').innerHTML = ""
+
+		},
+		error: function (data) {
+			document.getElementById('responsee').style.display='none'; 
+			//document.getElementsByClassName('messagee').innerHTML = ''; 
+			$("#responsee .messagee").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#responsee").removeClass("alert-success").addClass("alert-warning").fadeIn();
+
+			$("html, body").animate({
+				scrollTop: $('#responsee').offset().top
+			}, 1000);
+
+			
+		
+
+			//$btn.button("reset");
+		}
+
+	});
+
+
+}
+
+
+
+		function action_send_to_pharmacy(){
+
+         var description = document.getElementById('Description_prescription').value; 
+		
+	document.getElementById('responsee').style.display='none'; 
+	//document.getElementById('messagee').innerHTML=''; 
+
+			var errorCounter = validateForm();
+			if (errorCounter > 0) {
+				$("#responsee").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("#responsee .messagee").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+				$("html, body").animate({
+					scrollTop: $('#responsee').offset().top
+				}, 1000);
+			} else {
+				if(description.trim() == '') {alert('Description Box is Empty!!');return false;}
+				$(this).find('#Description_prescription').focus();
+				var $btn = $("#action_send_to_pharmacy").button("loading");
+	
+         
+	
+	
+				function invoice_create(page_link) {
+					//window.location =   page_link  ;
+				}
+	
+	
+	
+				$.ajax({
+	
+					url: 'response.php',
+					type: 'POST',
+					data: $("#create_inquiry_to_pharmacy").serialize(),
+					dataType: 'json',
+					success: function (data) {
+
+                     var page_link = 'posted-list.php';
+	
+						setInterval( function() { invoice_create(page_link); }, 2000 );
+	
+						$('#create_inquiry_to_pharmacy')[0].reset();
+
+						document.getElementById('pname').innerHTML = data.pname;
+						document.getElementById('invid').innerHTML = data.invid;
+
+
+						document.getElementById('table_Dr_request_Phar').innerHTML = data.data_returned;
+
+
+
+						//document.getElementById('modal').innerHTML = ""
+
+						$btn.button("reset");
+					},
+					error: function (data) {
+						document.getElementById('responsee').style.display='none'; 
+						//document.getElementsByClassName('messagee').innerHTML = ''; 
+						$("#responsee .messagee").html("<strong>" + data.status + "</strong>: " + data.message);
+						$("#responsee").removeClass("alert-success").addClass("alert-warning").fadeIn();
+	
+						$("html, body").animate({
+							scrollTop: $('#responsee').offset().top
+						}, 1000);
+	
+	
+						$btn.button("reset");
+					}
+	
+				});
+			}
+	
+
+		}
+
+
 		// create invoice from invoice 
 		$("#action_create_invoice_from_invoice").click(function (e) {
 			e.preventDefault();
@@ -2190,6 +3215,114 @@ $.ajax({
 		e.preventDefault();
 		updateInvoice();
 	});
+
+
+	//action_edit_invoice_pharmacy
+	$(document).on('click', "#action_edit_invoice_pharmacy", function (e) {
+		e.preventDefault();
+		updateInvoice_pharmacy();
+	});
+
+
+	function updateInvoice_pharmacy(){
+
+
+		var errorCounter = validateForm();
+        if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			
+		var invoice_patient_paying = document.getElementById('invoice_patient_paying_edit').value;
+		if(invoice_patient_paying == '')
+		  {
+			  alert("Fill customer bills" );              
+			  document.getElementById('invoice_patient_paying_edit').focus();
+			  return false;
+		  }
+
+		  var total = parseFloat($('.invoice-total').html());
+		  var customer_paying = parseInt($('#invoice_patient_paying_edit').val()) ;
+		  var balance_price = parseInt($('#limited_price').val()) ;
+		  var limited_price = balance_price/2;
+
+
+	  if(  customer_paying < 1  )
+		  {
+			  alert("Dear user Customer Payment should be at least half of the balance of last payment, In this case ==" + limited_price);
+			  return false;
+		  }
+
+
+			var $btn = $("#action_create_invoice_from_pharmacy").button("loading");
+
+			$(".required").parent().removeClass("has-error");
+			$("#create_invoice_from_pharmacy").find(':input:disabled').removeAttr('disabled');
+
+
+			function invoice_create(page_link) {
+				window.location =   page_link  ;
+			}
+
+
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#update_invoice").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					$("#create_invoice").before().html("<a href='request_from_dr-pharmacy.phpt.php' class='btn btn-primary'>Create new invoice</a>");
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+					//setInterval(invoice_create, 2000); quote receipt invoice
+                 if(data.invoice_type == 'quote ')  {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+				 else if (data.invoice_type == 'invoice') {  var invoice_type = 'request_from_dr-pharmacy.php'; } 
+
+					setInterval( function() { invoice_create(invoice_type); }, 2000 );
+
+
+
+					$("#create_invoice_from_pharmacy").remove();
+					$btn.button("reset");
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+
+
+
+
+
+	}
+
+
+
+
+
+
 
 	// enable date pickers for due date and invoice date
 	var dateFormat = $(this).attr('data-vat-rate');
@@ -2370,6 +3503,152 @@ $.ajax({
 					$("html, body").animate({
 						scrollTop: $('#response').offset().top
 					}, 1000);
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+	}
+
+
+	function actionAddcategories(){
+
+		var errorCounter = validateForm();
+
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			$(".required").parent().removeClass("has-error");
+
+			function categories_list() {
+				window.location = "categories-list.php";
+			}
+
+			var $btn = $("#action_add_category").button("loading");
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#add_category").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					
+
+if(data.status == 'Success')
+	{
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+                    setInterval(categories_list, 1500);
+
+					$btn.button("reset");
+	}
+	if(data.status == 'Error')
+		{
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+			//setInterval(manufactures_list, 1500);
+			$btn.button("reset");
+
+		}
+
+
+
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-"+ data.style_one).addClass("alert-"+ data.style_second).fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+			
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+
+
+		
+	}
+
+
+
+	function actionAddManu() {
+
+		var errorCounter = validateForm();
+
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			$(".required").parent().removeClass("has-error");
+
+			function manufactures_list() {
+				window.location = "manage_manufactures.php";
+			}
+
+			var $btn = $("#action_add_manufacture").button("loading");
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#add_manu").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					
+
+if(data.status == 'Success')
+	{
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+                    setInterval(manufactures_list, 1500);
+					$btn.button("reset");
+	}
+	if(data.status == 'Error')
+		{
+			$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+			//setInterval(manufactures_list, 1500);
+			$btn.button("reset");
+
+		}
+
+
+
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-"+ data.style_one).addClass("alert-"+ data.style_second).fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+			
 					$btn.button("reset");
 				}
 
@@ -2824,6 +4103,111 @@ function deleteCompany(userId){
 				$btn.button("reset");
 			},
 			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+		});
+
+	}
+ 
+	//Editing Catogores 
+
+	function updateCategories() {
+
+		var $btn = $("#action_update_Categories").button("loading");
+
+
+		function update_categories_page() {
+			window.location = "categories-list.php";
+		}
+
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: $("#update_Categories").serialize(),
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+
+
+				setInterval(update_categories_page, 2000);
+
+
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+
+				$btn.button("reset");
+
+
+
+			},
+			error: function (data) {
+
+			
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+				$btn.button("reset");
+			}
+		});
+
+	}
+
+
+
+
+
+
+
+
+
+	// Editing Manufacturer table 
+	function updateManufacturer() {
+
+		var $btn = $("#action_update_manufacturer").button("loading");
+
+
+		function update_manu_page() {
+			window.location = "manage_manufactures.php";
+		}
+
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: $("#update_manufacturerr").serialize(),
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+
+
+				setInterval(update_manu_page, 2000);
+
+
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+
+				$btn.button("reset");
+
+
+
+			},
+			error: function (data) {
+
+			
 				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
 				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
 				$("html, body").animate({

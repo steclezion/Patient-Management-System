@@ -43,7 +43,7 @@ if ((in_array('1', $user_permission))) {
       if($_SESSION['user_type']  == 'Labaratory') {include('dashboard_Labaratory.php'); }
       
       
-      
+      if($_SESSION['user_type']  == 'Pharmacy') {include('dashboard_pharmacy.php'); }
       
       
       

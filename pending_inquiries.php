@@ -55,6 +55,8 @@ if ((in_array('3', $user_permission))) {
 			</div>
 		</div>
 	</div>
+
+
 <div>
 
 <div id="delete_invoice" class="modal fade">
@@ -359,6 +361,11 @@ if ((in_array('3', $user_permission))) {
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+
+  </div>  <!---Row --->
+
+    </div>  <!---Row --- >
 
 
 

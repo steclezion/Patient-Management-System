@@ -137,6 +137,7 @@ if ((in_array('5', $user_permission))) {
 					<a href="#" hidden class="float-right select-customer"><b>OR</b> Select Existing Patient</a>
 					<div class="clear"></div>
 				</div>
+				
 				<div class="panel-body form-group form-group-sm">
 					<div class="row">
 						<div class="col-xs-12">

@@ -171,6 +171,7 @@ if ((in_array('5', $user_permission))) {
 		</div>
 	</div>
 	<!-- / end client details section -->
+	 
 	<table class="table table-bordered table-hover table-striped" id="invoice_table">
 		<thead>
 			<tr>
@@ -219,17 +220,24 @@ if ((in_array('5', $user_permission))) {
 					</div>
 				</td>
 				<td class="text-right">
-					<div  class="form-group form-group-sm  no-margin-bottom" title="Enter % OR value (ex: 10% or 10.50)">
-						<input  min="0" value="0" <?php echo DISCOUNT;?> type="text" title="Enter % OR value (ex: 10% or 10.50)" class="form-control calculate invoice_product_discount" 
-							name="invoice_product_discount[]" placeholder="Enter % OR value (ex: 10% or 10.50)"/>
-					</div>
+				<div  class="form-group form-group-sm  no-margin-bottom" title="Enter % OR value (ex: 10% or 10.50)">
+						<input  min="0"  <?php //echo DISCOUNT;?>
+						 type="text" title="Enter % OR value (ex: 10% or 10.50)" 
+						 class="form-control calculate  invoice_product_discount" 
+						 name="invoice_product_discount[]"
+						 placeholder="Enter % OR value (ex: 10% or 10.50)"
+					
+						 />
+                    </div>
+
 				</td>
 				<td class="text-right">
 					<div class="input-group input-group-md">
 						<span class="input-group-addon">
 							<?php echo CURRENCY ?> &nbsp;
 						</span>
-						<input type="text" class="form-control calculate-sub calculate invoice_product_sub" name="invoice_product_sub[]"
+						<input type="text" class="form-control calculate-sub calculate invoice_product_sub" 
+						name="invoice_product_sub[]"
 						min="0"  value="0.00" aria-describedby="sizing-addon1" disabled>
 					</div>
 				</td>
