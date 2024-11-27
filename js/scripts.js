@@ -174,12 +174,27 @@ $(document).ready(function () {
 			success: function (data) {
 				document.getElementById('pname').innerHTML = data.pname;
 						document.getElementById('invid').innerHTML = data.invid;
+					
 			document.getElementById('table_Dr_request_Phar').innerHTML = data.data_returned;
+			
+
+			if(data.Status_submission == 'Submited')
+				{
+					  document.getElementById('stat').style.display = 'none';
+					//$('#stat').hide();
+				}
+				else 
+				{
+					document.getElementById('stat').style.display = 'block';
+					//$('#stat').hide();
+				}
 
 			},
 			error: function (data) {
-				
-				$btn.button("reset");
+				//alert(data.Status_submission);
+			//$btn.button("reset");
+			document.getElementById('stat').style.display = 'block';
+			document.getElementById('table_Dr_request_Phar').innerHTML = "";
 			}
 		});
 
@@ -547,6 +562,19 @@ $(document).on('click', "#action_update_company", function (e) {
 		downloadCSV(action);
 
 	});
+
+
+		// download CSV Procedure
+		$(document).on('click', ".download-csv-p", function (e) {
+			e.preventDefault;
+	
+			var action = 'action=download_csv-p'; //build a post data structure
+			downloadCSVP(action);
+	
+		});
+
+
+
 
 	// email invoice
 	$(document).on('click', ".email-invoice", function (e) {
@@ -1529,6 +1557,16 @@ if( renal_status  == 1) {
 	   document.getElementById('Add_users').checked =  true; 
 	   document.getElementById('edit_users').checked = true; 
 	   document.getElementById('delete_users').checked = true; 
+
+	    document.getElementById('Request_from_Dr').checked = true; 
+        document.getElementById('Today_Request_from_Dr').checked = true; 
+        document.getElementById('Send_inquiries').checked = true; 
+        document.getElementById('request_from_dr').checked = true; 
+        document.getElementById('todays_receipts').checked = true; 
+        document.getElementById('manufacturers').checked = true; 
+        document.getElementById('Categories').checked = true; 
+        document.getElementById('Medicines').checked = true; 
+        document.getElementById('PInvoices').checked = true; 
 	 
 
 	});
@@ -1559,6 +1597,15 @@ if( renal_status  == 1) {
 		document.getElementById('Add_users').checked =  false; 
 		document.getElementById('edit_users').checked = false; 
 		document.getElementById('delete_users').checked = false; 
+		document.getElementById('Request_from_Dr').checked = false; 
+        document.getElementById('Today_Request_from_Dr').checked = false; 
+        document.getElementById('Send_inquiries').checked = false; 
+        document.getElementById('request_from_dr').checked = false; 
+        document.getElementById('todays_receipts').checked = false; 
+        document.getElementById('manufacturers').checked = false; 
+        document.getElementById('Categories').checked = false; 
+        document.getElementById('Medicines').checked = false; 
+        document.getElementById('PInvoices').checked = false; 
 	 
 
 	});
@@ -2740,6 +2787,7 @@ function action_create_invoice_from_pharmacy_new()
 
 
 
+
 		$.ajax({
 
 			url: 'response.php',
@@ -2935,11 +2983,12 @@ function action_create_invoice_from_pharmacy_new()
 		  var total = parseFloat($('.invoice-total').html());
 		  var customer_paying = parseInt($('#invoice_patient_paying').val()) ;
 		  var least_payment = total/2;
-	  if(  customer_paying < least_payment  )
-		  {
-			  alert("Dear user Customer Payment should be at least half of the total amount at initial payment, In this case ==" + least_payment);
-			  return false;
-		  }
+
+	//   if(  customer_paying < least_payment  )
+	// 	  {
+	// 		  alert("Dear user Customer Payment should be at least half of the total amount at initial payment, In this case ==" + least_payment);
+	// 		  return false;
+	// 	  }
 
 
 			var $btn = $("#action_create_invoice_from_pharmacy").button("loading");
@@ -3017,7 +3066,51 @@ function action_create_invoice_from_pharmacy_new()
 		Submit_to_pharmacy();
 	});
 
+//partial-paidL
 
+$(document).on('click', ".partial-paidL", function (e) {
+	e.preventDefault();
+
+	var action = 'action=retirieve_balanceL&invoice=' + $(this).attr('data-invoice-id'); //build a post data structure
+	var user = $(this);
+
+	$('#check_balance').modal({
+		backdrop: 'static',
+		keyboard: false
+	});
+
+	retrieve_balanceL(action);
+});
+
+function retrieve_balanceL(action) {
+
+	jQuery.ajax({
+
+		url: 'response.php',
+		type: 'POST',
+		data: action,
+		dataType: 'json',
+		success: function (data) {
+			document.getElementById('retrieve_value_from_balance').innerHTML = data.data_returned;
+			return false;
+		},
+		error: function (data) {
+		}
+	});
+
+
+	$('#check_balance').modal({
+		//backdrop: 'static',
+		keyboard: true
+	});
+
+
+}
+
+
+
+
+//partial-paid
 
 	$(document).on('click', ".partial-paid", function (e) {
 		e.preventDefault();
@@ -3222,6 +3315,106 @@ function Submit_to_pharmacy(){
 		e.preventDefault();
 		updateInvoice_pharmacy();
 	});
+
+
+	//action_edit_invoice_Laboratory
+	$(document).on('click', "#action_edit_invoice_Laboratory", function (e) {
+		e.preventDefault();
+		updateInvoice_Laboratory();
+	});
+
+
+
+
+function updateInvoice_Laboratory(){
+
+var errorCounter = validateForm();
+        if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
+		} else {
+
+			
+		var invoice_patient_paying = document.getElementById('invoice_patient_paying_edit').value;
+		if(invoice_patient_paying == '')
+		  {
+			  alert("Fill customer bills" );              
+			  document.getElementById('invoice_patient_paying_edit').focus();
+			  return false;
+		  }
+
+		  var total = parseFloat($('.invoice-total').html());
+		  var customer_paying = parseInt($('#invoice_patient_paying_edit').val()) ;
+		  var balance_price = parseInt($('#limited_price').val()) ;
+		  var limited_price = balance_price/2;
+
+
+	//   if(  customer_paying < 1  )
+	// 	  {
+	// 		  alert("Dear user Customer Payment should be at least half of the balance of last payment, In this case ==" + limited_price);
+	// 		  return false;
+	// 	  }
+
+
+			var $btn = $("#action_create_invoice_from_pharmacy").button("loading");
+
+			$(".required").parent().removeClass("has-error");
+			$("#create_invoice_from_pharmacy").find(':input:disabled').removeAttr('disabled');
+
+
+			function invoice_create(page_link) {
+				window.location =   page_link  ;
+			}
+
+
+
+			$.ajax({
+
+				url: 'response.php',
+				type: 'POST',
+				data: $("#update_invoice").serialize(),
+				dataType: 'json',
+				success: function (data) {
+					$("#create_invoice").before().html("<a href='request_from_dr-pharmacy.phpt.php' class='btn btn-primary'>Create new invoice</a>");
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+					//setInterval(invoice_create, 2000); quote receipt invoice
+                 if(data.invoice_type == 'quote ')  {  var invoice_type = 'request_from_dr.php'; } 
+				 else if (data.invoice_type == 'receipt') {  var invoice_type = 'request_from_dr.php'; } 
+				 else if (data.invoice_type == 'invoice') {  var invoice_type = 'request_from_dr.php'; } 
+
+					setInterval( function() { invoice_create(invoice_type); }, 2000 );
+
+
+
+					$("#create_invoice_from_pharmacy").remove();
+					$btn.button("reset");
+				},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+
+
+					$btn.button("reset");
+				}
+
+			});
+		}
+
+
+
+}
 
 
 	function updateInvoice_pharmacy(){
@@ -3761,69 +3954,102 @@ if(data.status == 'Success')
 	}
 
 
-function actionCreateInvoice_from_invoice()
-{
 
 
-	var errorCounter = validateForm();
+	function actionCreateInvoice_from_invoice()
+	{
+	
+	
+		var errorCounter = validateForm();
+	
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
+			$("html, body").animate({
+				scrollTop: $('#response').offset().top
+			}, 1000);
 
-	if (errorCounter > 0) {
-		$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-		$("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
-		$("html, body").animate({
-			scrollTop: $('#response').offset().top
-		}, 1000);
-	} else {
+		} else {
+	
+			
+	
+	
+		   var invoice_patient_paying = document.getElementById('invoice_patient_paying').value;
 
-		var $btn = $("#action_create_invoice_from_invoice").button("loading");
-
-		$(".required").parent().removeClass("has-error");
-		$("#create_invoice").find(':input:disabled').removeAttr('disabled');
-
-
-		function invoice_create() {
-			window.location = "request_from_dr.php";
-		}
-
-
-
-		$.ajax({
-
-			url: 'response.php',
-			type: 'POST',
-			data: $("#create_invoice").serialize(),
-			dataType: 'json',
-			success: function (data) {
-				$("#create_invoice").before().html("<a href='invoice-list.php' class='btn btn-primary'>Create new invoice</a>");
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({
-					scrollTop: $('#response').offset().top
-				}, 1000);
-
-				setInterval(invoice_create, 2000);
-
-
-				$("#create_invoice").remove();
-				$btn.button("reset");
-			},
-			error: function (data) {
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-
-				$("html, body").animate({
-					scrollTop: $('#response').offset().top
-				}, 1000);
-
-
-				$btn.button("reset");
+			if(invoice_patient_paying == '')
+			  {
+				  alert("Fill customer bills" );              
+				  document.getElementById('invoice_patient_paying').focus();
+				  return false;
+			  }
+	
+			  var total = parseFloat($('.invoice-total').html());
+			  var customer_paying = parseInt($('#invoice_patient_paying').val()) ;
+			  var least_payment = total/2;
+		  if(  customer_paying < least_payment  )
+			  {
+				  alert("Dear user Customer Payment should be at least half of the total amount at initial payment, In this case ==" + least_payment);
+				  return false;
+			  }
+	
+	
+			  var $btn = $("#action_create_invoice_from_invoice").button("loading");
+	
+			  $(".required").parent().removeClass("has-error");
+			  $("#create_invoice").find(':input:disabled').removeAttr('disabled');
+	
+	
+					function invoice_create() {
+				window.location = "request_from_dr.php";
 			}
-
-		});
+	
+	
+	
+	
+	
+	
+			$.ajax({
+	
+				url: 'response.php',
+				type: 'POST',
+				data: $("#create_invoice").serialize(),
+				dataType: 'json',
+				success: function (data) {
+						$("#create_invoice").before().html("<a href='invoice-list.php' class='btn btn-primary'>Create new invoice</a>");
+						$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+						$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+						$("html, body").animate({
+							scrollTop: $('#response').offset().top
+						}, 1000);
+	
+						//setInterval(invoice_create, 2000); quote receipt invoice
+					 if(data.invoice_type == 'quote ')  {  var invoice_type = 'request_from_dr.php'; } 
+					 else if (data.invoice_type == 'receipt') {  var invoice_type = 'request_from_dr.php'; } 
+					 else if (data.invoice_type == 'invoice') {  var invoice_type = 'request_from_dr.php'; } 
+	
+						setInterval( function() { invoice_create(invoice_type); }, 2000 );
+	
+	
+	
+						$("#create_invoice_from_invoice").remove();
+						$btn.button("reset");
+					},
+				error: function (data) {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+	
+					$("html, body").animate({
+						scrollTop: $('#response').offset().top
+					}, 1000);
+	
+	
+					$btn.button("reset");
+				}
+	
+			});
+		}
+	
 	}
-
-}
-
 
 
 $(function() { //run on document.ready
@@ -4474,6 +4700,59 @@ function updateCompany(){
 	}
 
 	function downloadCSV(action) {
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: action,
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+			}
+		});
+
+	}
+
+
+		function downloadCSVP(action) {
+
+		jQuery.ajax({
+
+			url: 'response.php',
+			type: 'POST',
+			data: action,
+			dataType: 'json',
+			success: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+			},
+			error: function (data) {
+				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({
+					scrollTop: $('#response').offset().top
+				}, 1000);
+			}
+		});
+
+	}
+
+	function downloadCSVP(action) {
 
 		jQuery.ajax({
 

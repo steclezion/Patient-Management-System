@@ -34,6 +34,7 @@ if ((in_array('3', $user_permission))) {
 			</div>
 			<div class="panel-body form-group form-group-sm">
 				<?php getInvoices_from_DR(); ?>
+        <?php  //getInvoicesPharmacy_from_DR(); ?>
 			</div>
 		</div>
 	</div>
@@ -58,6 +59,45 @@ if ((in_array('3', $user_permission))) {
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div id="check_balance" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title"> Check Balance</h4>
+			</div>
+			<div class="modal-body" >
+
+      <table class="table table-striped table-hover table-bordered"   cellspacing="0">
+                  <thead>
+                  <tr>
+                    <th>Count</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Invoice File</th>
+                    <th>Action</th>
+                </tr>
+                  </thead>
+                  <tbody id="retrieve_value_from_balance">
+                   </tbody>
+                  <tfoot>
+                
+                  
+                  </tfoot>
+                </table>
+			</div>
+			<div class="modal-footer">
+				<!-- <button type="button" data-dismiss="modal" class="btn btn-primary" id="selected">Add</button> -->
+				<button type="button" data-dismiss="modal" class="btn">Cancel</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <?php

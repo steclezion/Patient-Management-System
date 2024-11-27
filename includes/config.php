@@ -61,7 +61,7 @@ define('DISCOUNT', 'readonly'); // Currency symbol
 define('ENABLE_VAT', false); // Enable TAX/VAT
 define('VAT_INCLUDED', false); // Is VAT included or excluded?
 define('VAT_RATE', '10'); // This is the percentage value
-define('PID', 'BETIEL'); // This is the starting counting number of Elements
+define('PID', 'Mekane_Hiwot'); // This is the starting counting number of Elements
 
 define('PAYMENT_DETAILS', 'Mekane-Hiwot Invoice Mg System.<br>Location: Mahta-Yei<br>email:mekae_hiwot_123@gmail.com'); // Payment information
 

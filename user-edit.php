@@ -44,9 +44,10 @@ $array_numbers = [];
 $explode_users_permission = explode(',',$user_permission);
 
 foreach($explode_users_permission as $exp)
-{ array_push($array_numbers, $exp);}
+{   array_push($array_numbers, $exp);    }
 
 
+//var_dump($array_numbers);
 
 /* close connection */
 $mysqli->close();
@@ -64,14 +65,15 @@ $mysqli->close();
 <style>
 
 #ex1 {
+
   width: 600px;
   margin-left: 2px;
   border: 2px solid lightgray;
   padding : 0.1%;
   text-align: justify;
   border-width: auto;
-
   text-align:left;
+
 }
 
 #ex2 {
@@ -159,9 +161,39 @@ $mysqli->close();
 
 	  <?php    if(in_array('17',$array_numbers)) { @$checked_delete_inv = 'checked'; } else { @$checked_delete_inv='';} ?>
 	  <label><input id="delete_invoice"  type="checkbox"  <?php echo @$checked_delete_inv; ?> name="delete_invoice" value="17">    Delete Invoices   </label>&nbsp;
+	
+	  <?php    if(in_array('22',$array_numbers)) { @$todays_receipts = 'checked'; } else { @$todays_receipts = '';} ?>
+      <label><input type="checkbox" name="todays_receipts" <?php echo  @$todays_receipts; ?>  value="22" id="todays_receipts">   Todays Receipts    </label>&nbsp;
+
+      <?php    if(in_array('23',$array_numbers)) { @$request_from_dr = 'checked'; } else { @$request_from_dr = '';} ?>
+	  <label><input type="checkbox" name="request_from_dr" <?php echo  @$request_from_dr; ?>   value="23" id="request_from_dr">   Request From Dr    </label>&nbsp;
+     </ul>
+    </div>
+	
+      &nbsp;
+      <div class="checkbox" >
+	<ul class="list-group" id ="ex1">
+	<?php    if(in_array('24',$array_numbers)) { @$Send_inquiries = 'checked'; } else { @$Send_inquiries = '';} ?>
+
+	 <label><input type="checkbox" name="Send_inquiries" value="24" <?php echo  @$Send_inquiries; ?>  id="Send_inquiries"> Physician </label>&nbsp;
+    </ul>
+    </div>
+    &nbsp;
+
+   <div class="checkbox" >
+	<ul class="list-group" id ="ex1">
+
+	<?php    if(in_array('25',$array_numbers)) { @$Today_Request_from_Dr = 'checked'; } else { @$Today_Request_from_Dr = '';} ?>
+	 <label><input type="checkbox" name="Today_Request_from_Dr" value="25" <?php echo  @$Today_Request_from_Dr; ?>  id="Today_Request_from_Dr"> Today's Request from Dr </label>&nbsp;
+	
+
+	 <?php    if(in_array('26',$array_numbers)) { @$Request_from_Dr = 'checked'; } else { @$Request_from_Dr = '';} ?>
+	 <label><input type="checkbox" name="Request_from_Dr" value="26" <?php echo  @$Request_from_Dr; ?>  id="Request_from_Dr">  Request from Dr </label>&nbsp;
+
 	</ul>
     </div>
-&nbsp;
+    &nbsp;
+
 	
 	<div class="checkbox">
 		<ul class="list-group" id ="ex1">
@@ -232,7 +264,24 @@ $mysqli->close();
     </div>
 &nbsp;
 
+
+	<div class="checkbox" >
+	<ul class="list-group" id ="ex1" >
+	<?php  if(in_array('27',$array_numbers)) { @$manufacturers = 'checked'; } else { @$manufacturers='';} ?>
+    <label><input type="checkbox" name="manufacturers" <?php echo @$manufacturers; ?> value="27" id="manufacturers" > Manufacturers</label> &nbsp;
 	
+	<?php  if(in_array('28',$array_numbers)) { @$Categories = 'checked'; } else { @$Categories ='';} ?>
+	  <label><input type="checkbox" name="Categories" value="28" <?php echo @$Categories; ?>  id="Categories" > Categories</label>&nbsp;
+	  
+	  <?php  if(in_array('29',$array_numbers)) { @$Categories = 'checked'; } else { @$Categories ='';} ?>
+      <label><input type="checkbox" name="Medicines" value="29" <?php echo @$Categories; ?>   id="Medicines" > Medicines</label>&nbsp;
+      
+	  <?php  if(in_array('30',$array_numbers)) { @$PInvoices = 'checked'; } else { @$PInvoices ='';} ?>
+	  <label><input type="checkbox" name="PInvoices" value="30" <?php echo @$PInvoices; ?>   id="PInvoices" > Pharmacy Invoices</label>&nbsp;
+
+    </ul>
+    </div>
+&nbsp; 
 	 
 	
 	

@@ -48,8 +48,8 @@ if ((in_array('5', $user_permission))) {
 	$results_tasks = $mysqli->query($query_task_tracker);
 
 	$Get_tasks = $results_task->fetch_assoc();
-	$invoice_type= $Get_tasks['invoice_type'];
-	$invoice_status = $Get_tasks['status'];
+	@$invoice_type= $Get_tasks['invoice_type'];
+	@$invoice_status = $Get_tasks['status'];
 	
 
 
@@ -60,7 +60,7 @@ $get_balance = "SELECT *,  b.invoice_type as binv_type , count(b.invoice_id) as 
 from invoices i
  Join balance_invoices b
 ON b.invoice_id = i.invoice
-WHERE (b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Pharmacy')
+WHERE (b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Laboratory')
 Group by b.invoice_id
 ORDER BY i.invoice DESC";
 $results = $mysqli->query($get_balance);
@@ -78,7 +78,7 @@ $row_fetch = $results->fetch_assoc()
 		</div>
 
 		<form method="post" id="update_invoice">
-			<input type="hidden" name="action" value="update_invoice_pharmacy">
+			<input type="hidden" name="action" value="update_invoice_laboratory">
 			<input type="hidden" name="update_id_invoice_pharmacy" value="<?php echo $getID; ?>">
 			
 	   <input type="hidden" name="transaction_id"  id="transaction_id" value="<?php echo  $Get_transaction_id ;?>">
@@ -307,13 +307,13 @@ $row_fetch = $results->fetch_assoc()
 			<div class="well well-lg">	
 	
  
- <table class="table table-striped table-hover table-bordered" id="med_table" cellspacing="0"><thead><tr>
+ <!-- <table class="table table-striped table-hover table-bordered" id="med_table" cellspacing="0"><thead><tr>
  <th>Ser.No</th>
 <th>Medicine Name</th>
 <th>Quanity</th>
 <th>Result</th>
 <th>Description</th>
-</tr></thead><tbody>
+</tr></thead><tbody> -->
 
 <?php 
 $i=1;
@@ -329,21 +329,20 @@ $query_task_tracker = "SELECT *,m.medicine_name as medname, c.name as cname , t.
 
 	$results_tasks = $mysqli->query($query_task_tracker);
 
-while($med = $results_tasks->fetch_assoc()) {
-	//$sum+=$med["tquantity"] * $med["rate"]; 
-	print '
-	<tr class="success">
-	 <td>'.$i.'</td>
-   <td>'.$med["medname"].'</td>
-    <td>'.$med["tquantity"].'</td>
-    <td>'.$med["tquantity"].'*'.$med["rate"].' '.'</td>
+// while($med = $results_tasks->fetch_assoc()) {
+// 	$sum+=$med["tquantity"] * $med["rate"]; 
+// 	print '
+// 	<tr class="success">
+// 	 <td>'.$i.'</td>
+//    <td>'.$med["medname"].'</td>
+//     <td>'.$med["tquantity"].'</td>
+//     <td>'.$med["tquantity"].'*'.$med["rate"].'='.number_format($med["tquantity"] * $med["rate"],2).'</td>
   
-   <td>'.$med["tdesc"].'</td>
-   </tr>';
-$i++;
-//.number_format($med["tquantity"] * $med["rate"],2)
-}
-//print '<tr class="info">    <td colspan="1"> </td> <td > </td> <td > </td>   <td >'.number_format($sum,2).'</td>   <td > </td>            <tr>';
+//    <td>'.$med["tdesc"].'</td>
+//    </tr>';
+// $i++;
+// }
+// print '<tr class="info">    <td colspan="1"> </td> <td > </td> <td > </td>   <td >'.number_format($sum,2).'</td>   <td > </td>            <tr>';
 ?>
 </tbody>
 </table>
@@ -384,19 +383,7 @@ $i++;
 						}
 
 						// the query
-					// 	$query2 = "SELECT *, distinct('product')  FROM invoice_items WHERE (invoice = '" . $mysqli->real_escape_string(trim($invoice_generated)) . "') ";
-
-					$query2 = "SELECT `invoice_items`.`id`,
-    `invoice_items`.`invoice`,
-	`invoice_items`.`product`,
-   count( `invoice_items`.`product`),
-    `invoice_items`.`qty`,
-    `invoice_items`.`price`,
-    `invoice_items`.`discount`,
-    `invoice_items`.`subtotal`
-FROM `invoicemgsys`.`invoice_items`
-WHERE (invoice = '$invoice_generated')
-group by `invoice_items`.`product`";
+						$query2 = "SELECT * FROM invoice_items WHERE invoice = '" . $mysqli->real_escape_string(trim($invoice_generated)) . "'";
 
 						$result2 = mysqli_query($mysqli, $query2);
 
@@ -467,8 +454,8 @@ $invoice_id = $Get_invoice_id;
 $get_balance = "SELECT *,  b.invoice_type as binv_type , count(b.invoice_id) as counted_b , i.invoice as invoice_right, b.Timestamp as btimestamp
 from invoices i
  Join balance_invoices b
-ON b.invoice_id = i.invoice
-WHERE (b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Pharmacy')
+ON b.invoice_id = i.invoice 
+WHERE (b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Laboratory')
 Group by b.invoice_id
 ORDER BY i.invoice ASC ";
 
@@ -525,7 +512,7 @@ print	"<tr><td><b style='color:blue'>" . $sts. "</b></td>
 from invoices i
  Join balance_invoices b
 ON b.invoice_id = i.invoice
-WHERE ( b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Pharmacy')
+WHERE ( b.old_invoice_id = '$Get_invoice_id' and b.invoice_type='Laboratory')
 Group by b.invoice_id
 ORDER BY b.id DESC limit 1 ";
 
@@ -579,8 +566,8 @@ if($result) {
 							<strong>Sub Total:</strong>
 						</div>
 						<div class="col-xs-3">
-							<?php echo CURRENCY ?> &nbsp;<span class="invoice-sub-total"> <?php echo @$invoice_subtotal; ?></span>
-							<input type="hidden" name="invoice_subtotal" id="invoice_subtotal" value="<?php echo @$invoice_subtotal; ?>">
+							<?php echo CURRENCY ?> &nbsp;<span class="invoice-sub-total"> <?php echo $invoice_subtotal; ?></span>
+							<input type="hidden" name="invoice_subtotal" id="invoice_subtotal" value="<?php echo $invoice_subtotal; ?>">
 						</div>
 					</div>
 					<div class="row">
@@ -588,8 +575,8 @@ if($result) {
 							<strong>Discount:</strong>
 						</div>
 						<div class="col-xs-3">
-							<?php echo CURRENCY ?> &nbsp;<span class="invoice-discount"> <?php echo @$invoice_discount; ?></span>
-							<input type="hidden" name="invoice_discount" id="invoice_discount" value="<?php echo @$invoice_discount; ?>">
+							<?php echo CURRENCY ?> &nbsp;<span class="invoice-discount"> <?php echo $invoice_discount; ?></span>
+							<input type="hidden" name="invoice_discount" id="invoice_discount" value="<?php echo $invoice_discount; ?>">
 						</div>
 					</div>
 					<div class="row">
@@ -612,7 +599,7 @@ if($result) {
 						</div>
 						<div class="col-xs-3">
 							<?php echo CURRENCY ?> &nbsp;<span class="invoice-vat" data-enable-vat="<?php echo ENABLE_VAT ?>" data-vat-rate="<?php echo VAT_RATE ?>" data-vat-method="<?php echo VAT_INCLUDED ?>"><?php echo $invoice_vat; ?></span>
-							<input type="hidden" name="invoice_vat" id="invoice_vat" value="<?php echo @$invoice_vat; ?>">
+							<input type="hidden" name="invoice_vat" id="invoice_vat" value="<?php echo $invoice_vat; ?>">
 						</div>
 					</div>
 					<?php } ?>
@@ -622,8 +609,8 @@ if($result) {
 						</div>
 						<div class="col-xs-3">
 						<!-- <span id="fill_patient" class="btn btn-primary btn-xs add-to-patient-section"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></span>      -->
-            <?php echo CURRENCY ?> &nbsp;<span class="invoice-total"> <?php echo @$invoice_total; ?></span>
-			<input type="hidden" name="invoice_total" id="invoice_total" value="<?php echo @$invoice_total; ?>">
+            <?php echo CURRENCY ?> &nbsp;<span class="invoice-total"> <?php echo $invoice_total; ?></span>
+			<input type="hidden" name="invoice_total" id="invoice_total" value="<?php echo $invoice_total; ?>">
 						</div>
 					</div>
 
@@ -631,7 +618,7 @@ if($result) {
 <br>
 			<div class="row">
 				<div class="col-xs-4 col-xs-offset-5">
-					<strong class="shipping">Patient Paying Cash<?php echo @$ppaying; ?>:</strong>
+					<strong class="shipping">Patient Paying Cash<?php echo $ppaying; ?>:</strong>
 				</div>
 				<div class="col-xs-3">
 					<div class="input-group input-group-sm">
@@ -639,7 +626,7 @@ if($result) {
 							<?php echo CURRENCY ?> &nbsp;
 						</span>
 						<input type="number" class="form-control calculate invoice-patient-paying" name="invoice_patient_paying"  aria-describedby="sizing-addon1" placeholder="0.00" width="60%"
-						  value="<?php echo @$ppaying; ?>" id="invoice_patient_paying_edit" Placeholder="<?php echo $ppaying; ?>">
+						  value="<?php echo $ppaying; ?>" id="invoice_patient_paying_edit" Placeholder="<?php echo $ppaying; ?>">
 					</div>
 				</div>
 			</div>
@@ -660,9 +647,9 @@ if($result) {
 
 			</div>
 			<div class="row">
-				<div class="col-xs-12 margin-top btn-group">
-					<input type="submit" id="action_edit_invoice_pharmacy" class="btn btn-success float-right" value="Create Invoice Balance" data-loading-text="Updating...">
-				</div>
+				<!-- <div class="col-xs-12 margin-top btn-group">
+					<input type="submit" id="action_edit_invoice_Laboratory" class="btn btn-success float-right" value="Create Invoice Balance" data-loading-text="Updating...">
+				</div> -->
 			</div>
 		</form>
 

@@ -233,18 +233,19 @@ if ((in_array('5', $user_permission))) {
 $i=1;
 $sum=0;
 while($med = $results_tasks->fetch_assoc()) {
-	$sum+=$med["tquantity"] * $med["rate"]; 
+//	$sum+=$med["tquantity"] * $med["rate"]; 
 	print '
 	<tr class="success">
 	 <td>'.$i.'</td>
      <td>'.$med["medname"].'</td>
      <td>'.$med["tquantity"].'</td>
-     <td>'.$med["tquantity"].'*'.$med["rate"].'='.number_format($med["tquantity"] * $med["rate"],2)  .'</td>
+     <td>'.$med["tquantity"].'*'.$med["rate"]." " .'</td>
      <td>'.$med["tdesc"].'</td>
    </tr>';
 $i++;
+//number_format($med["tquantity"] * $med["rate"],2
 }
-print '<tr class="info">    <td colspan="1"> </td> <td > </td> <td > </td>   <td >'.number_format($sum,2).'</td>   <td > </td>            <tr>';
+//print '<tr class="info">    <td colspan="1"> </td> <td > </td> <td > </td>   <td >'.number_format($sum,2).'</td>   <td > </td>            <tr>';
 ?>
 </tbody>
 </table>

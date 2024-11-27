@@ -238,7 +238,7 @@ setInterval(function(){
             <li><a href="invoice-list.php"><i class="fa fa-money"></i>Manage Invoices</a></li>
             <?php } ?>
 
-            <?php  if (in_array('3', $user_permission)) {?> 
+            <?php  if (in_array('22', $user_permission)) {?> 
             <li><a href="receipts-list-today.php"><i class="fa fa-cab"></i>Today's Receipts</a></li>
             <?php } ?>
 
@@ -246,20 +246,20 @@ setInterval(function(){
             <li><a href="receipts-list.php"><i class="fa fa-cab"></i>Manage Receipts</a></li>
             <?php } ?>
 
-            <?php  if (in_array('3', $user_permission)) {?> 
+            <?php  if (in_array('23', $user_permission)) {?> 
             <li><a href="request_from_dr.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
             <?php } ?>
 
-
-            <?php  if (in_array('4', $user_permission)) {?>
+         <?php  if (in_array('4', $user_permission)) {?>
             <li><a href="#" class="download-csv"><i class="fa fa-download"></i>Download CSV</a></li>
             <?php } ?>
+
           </ul>
         </li>
 
 
 
-        <?php  if (in_array('11', $user_permission)) {?>
+        <?php  if (in_array('24', $user_permission)) {?>
 
         <li class="treeview">
        
@@ -276,8 +276,8 @@ setInterval(function(){
 
         </li>
 <?php  }  ?> 
+<?php  if ( in_array('25', $user_permission)  || in_array('26', $user_permission) ) {?>           
 
-<?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
         <li class="treeview">
          <a href="#"><i class="fa fa-file-text"></i> <span>Labaratory</span>
         <span class="pull-right-container">
@@ -287,14 +287,15 @@ setInterval(function(){
           <ul class="treeview-menu">
 
 
-          <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
+          <?php  if (in_array('25', $user_permission)) {?>           
             <li><a href="request_from_dr_for_labt_today.php"><i class="fa fa-cog"></i>Today's Request From Dr</a></li>
+           
             <?php } ?>
 
 
 
-          <?php  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {?>
-            <li><a href="request_from_dr_for_lab.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
+            <?php  if (in_array('26', $user_permission)) {?>           
+              <li><a href="request_from_dr_for_lab.php"><i class="fa fa-cog"></i>Request From Dr</a></li>
             <?php } ?>
 
 
@@ -304,8 +305,8 @@ setInterval(function(){
             <!-- <li><a href="posted-list.php"><i class="fa fa-cog"></i>Completed List</a></li> -->
            </ul>
         </li>
-        <?php } ?>
 
+        <?php } ?>
 
         <!-- Menu 2 -->
          <li class="treeview">
@@ -323,6 +324,10 @@ setInterval(function(){
             <?php  if (in_array('6', $user_permission)) {?>
             <li><a href="procedure-list.php"><i class="fa fa-cog"></i>Manage Procedures</a></li>
             <?php } ?>
+            <?php  if (in_array('4', $user_permission)) {?>
+            <li><a href="#" class="download-csv-p"><i class="fa fa-download"></i>Download CSV Procedure</a></li>
+            <?php } ?>
+            
           </ul>
         </li>
         <!-- Menu 3 -->
@@ -365,7 +370,7 @@ setInterval(function(){
 
 
         <li class="treeview">
-        <?php  if (in_array('11', $user_permission)) {?>
+        <?php  if ( in_array('27', $user_permission)  || in_array('28', $user_permission) || in_array('29', $user_permission) || in_array('30', $user_permission)) {?>           
           <a href="#"><i class="fa fa-users"></i><span>Pharmacy </span>
           <?php } ?>
             <span class="pull-right-container">
@@ -373,22 +378,22 @@ setInterval(function(){
             </span>
           </a>
           <ul class="treeview-menu">
-          <?php  if (in_array('11', $user_permission)) {?>
+          <?php  if (in_array('27', $user_permission)) {?>
 
             <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Manufactures  <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span></a>
             
             <ul class="treeview-menu">
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('27', $user_permission)) {?>
             <li><a href="add_manufactures.php"><i class="fa fa-cog"></i>Add Manufactures</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('27', $user_permission)) {?>
             <li><a href="manage_manufactures.php"><i class="fa fa-cog"></i>Manage Manufactures</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('27', $user_permission)) {?>
             <li><a href="pharmacy_list.php"><i class="fa fa-cog"></i>Import Manufactures</a>
           </li>
             <?php } ?>
@@ -397,38 +402,38 @@ setInterval(function(){
  </li>
            
 
-
+ <?php  if (in_array('28', $user_permission)) {?>
             <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Categories  <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span></a>
-            
+            <?php } ?>
             <ul class="treeview-menu">
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('28', $user_permission)) {?>
             <li><a href="add_categories.php"><i class="fa fa-cog"></i>Add Categories</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('28', $user_permission)) {?>
             <li><a href="categories-list.php"><i class="fa fa-cog"></i> Manage Categories</a>
           </li>
             <?php } ?>
           </ul>
           </li>
 
-
+          <?php  if (in_array('29', $user_permission)) {?>
           <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Medicines  <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span></a>
-            
+            <?php } ?>
             <ul class="treeview-menu">
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('29', $user_permission)) {?>
             <li><a href="medicine-add.php"><i class="fa fa-cog"></i>Add Medicines</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('29', $user_permission)) {?>
             <li><a href="medicine-list.php"><i class="fa fa-cog"></i>Manage Medicines</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('29', $user_permission)) {?>
             <li><a href="List_stock_Adjustments.php"><i class="fa fa-cog"></i>Stock Adjustment</a>
           </li>
             <?php } ?>
@@ -436,22 +441,22 @@ setInterval(function(){
           </li>
 
 
-          
+          <?php  if (in_array('30', $user_permission)) {?>
           <li><a href="pharmacy_add.php"><i class="fa fa-user-plus"></i>Invoices  <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span></a>
-            
+            <?php } ?>
             <ul class="treeview-menu">
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('30', $user_permission)) {?>
             <li><a href="invoice-create-pharmacy.php"><i class="fa fa-cog"></i>Create Invoice</a>
           </li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('30', $user_permission)) {?>
             <li><a href="request_from_dr-pharmacy.php"><i class="fa fa-cog"></i>Request from Dr-Prescribed </a>
           </li>
             <?php } ?>
 
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('30', $user_permission)) {?>
             <li><a href="receipts-list-today-pharmacy.php"><i class="fa fa-cog"></i>Manage Invoice-pharmacy</a>
           </li>
             <?php } ?>
@@ -479,7 +484,7 @@ setInterval(function(){
 
 
         <li class="treeview">
-        <?php  if (in_array('11', $user_permission)) {?>
+        <?php  if (in_array('14', $user_permission) || in_array('14', $user_permission) || in_array('15', $user_permission) || in_array('16', $user_permission)  ) {?>
           <a href="#"><i class="fa fa-users"></i><span>Company Infos</span>
           <?php } ?>
             <span class="pull-right-container">
@@ -487,10 +492,10 @@ setInterval(function(){
             </span>
           </a>
           <ul class="treeview-menu">
-          <?php  if (in_array('11', $user_permission)) {?>
+          <?php  if (in_array('14', $user_permission)) {?>
             <li><a href="company_add.php"><i class="fa fa-user-plus"></i>Add Company</a></li>
             <?php } ?>
-            <?php  if (in_array('12', $user_permission)) {?>
+            <?php  if (in_array('14', $user_permission)) {?>
             <li><a href="company_list.php"><i class="fa fa-cog"></i>Manage Company</a></li>
             <?php } ?>
           </ul>

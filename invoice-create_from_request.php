@@ -36,6 +36,21 @@ if ((in_array('5', $user_permission))) {
 	$Get_tasks = $results_task->fetch_assoc();
 	
 
+	$query_task_tracker_ = "SELECT *,m.medicine_name as medname, c.name as cname , t.id as tid, t.status as tstatus,  
+	t.task_tracker_related_id as tidn , t.quantity as tquantity , t.task_tracker_description as tdesc , t.Timestamp as tt , 
+	u.name as uname
+	FROM  task_tracker_pharmacy t 
+		   JOIN customers c ON c.invoice = t.task_tracker_related_id
+		   Join medicine m ON m.medicine_id = t.medicine_id
+		   JOIN users  u ON u.id  = t.Sender_id 
+		  WHERE t.task_tracker_related_id  = '$Get_invoice_id'  ";
+
+    // mysqli select query
+	$results_task_ = $mysqli->query($query_task_tracker_);
+
+	$results_tasks_ = $mysqli->query($query_task_tracker_);
+
+	$Get_tasks_ = $results_task_->fetch_assoc();
 
     ?>
 
@@ -51,6 +66,7 @@ if ((in_array('5', $user_permission))) {
 	<input type="hidden" name="action" value="create_invoice_from_invoice">
 
 	<input type="hidden" name="transaction_id"  id="transaction_id" value="<?php echo  $Get_transaction_id ;?>">
+	<input type="hidden" name="get_invoice_id"  id="get_invoice_id" value="<?php echo  $Get_invoice_id ;?>">
 
 	<div class="row">
 		<div class="col-xs-4">
@@ -210,6 +226,8 @@ if ((in_array('5', $user_permission))) {
 	</div>
 	<!-- / end client details section -->
 
+	
+
 	<div class="well well-lg">	
 	<span title="Requested Tests" > <?php 
 	$search = ',';
@@ -228,7 +246,7 @@ if ((in_array('5', $user_permission))) {
  echo  $Labratory_Test ;  ?>       </span></div>
 
 
-
+<!-- 
 	<table class="table table-bordered table-hover table-striped" id="invoice_table">
 		<thead>
 			<tr>
@@ -402,6 +420,264 @@ if ((in_array('5', $user_permission))) {
 				<button type="button" data-dismiss="modal" class="btn btn-primary" id="selected">Add</button>
 				<button type="button" data-dismiss="modal" class="btn">Cancel</button>
 			</div>
+		</div><!-- /.modal-content 
+	</div><!-- /.modal-dialog -
+</div><!-- /.modal -->
+
+<!-- popProductsList();  popCustomersList();  
+
+
+
+
+<div id="insert_customer" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Select An Existing Patient</h4>
+			</div>
+			<div class="modal-body">
+				<?php popCustomersList(); ?>
+			</div>
+			<div class="modal-footer">
+				<button type="button" data-dismiss="modal" class="btn">Cancel</button>
+			</div>
+		</div><!-- /.modal-content 
+	</div><!-- /.modal-dialog 
+</div>/.modal -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table class="table table-bordered table-hover table-striped" id="invoice_table">
+		<thead>
+			<tr>
+				<th width="500">
+					<h4> 
+					
+						
+					<a href="#" class="btn btn-success btn-xs add-row"><span class="glyphicon glyphicon-plus"
+								aria-hidden="true"></span></a> Product
+							
+							</h4>
+				</th>
+				<th>
+					<h4>Qty</h4>
+				</th>
+				<th width="200">
+					<h4>Price</h4>
+				</th>
+				<th width="30">
+					<h4><span title="Enter % OR value (ex: 10% or 10.50)"> Discount </span></h4>
+				</th>
+				<th>
+					<h4>Sub Total</h4>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr  id="calculate">
+				<td>
+					<div class="form-group form-group-sm  no-margin-bottom">
+						<a href="#" class="btn btn-danger btn-xs delete-row"><span class="glyphicon glyphicon-remove"
+								aria-hidden="true"></span></a>
+						<input type="text" class="form-control form-group-sm item-input invoice_product"
+							name="invoice_product[]" placeholder="Enter Name of Procedure" readonly>
+						<p  id="select-item" style="display:block" class="item-select">or <a href="#">Select Procedure</a></p>
+					</div>
+				</td>
+				<td class="text-right">
+					<div class="form-group form-group-sm no-margin-bottom">
+						<input type="number" class="form-control invoice_product_qty calculate"
+							name="invoice_product_qty[]" value="1"/>
+					</div>
+				</td>
+				<td class="text-right">
+					<div class="input-group input-group-md no-margin-bottom">
+						<span class="input-group-addon">
+							<?php echo CURRENCY ?> &nbsp;
+						</span>
+						<input readonly type="number" class="form-control calculate invoice_product_price required"
+							name="invoice_product_price[]" aria-describedby="sizing-addon1" placeholder="0.00"/>
+					</div>
+				</td>
+				<td class="text-right">
+					<div  class="form-group form-group-sm  no-margin-bottom" title="Enter % OR value (ex: 10% or 10.50)">
+						<input value="0" <?php echo DISCOUNT;?> type="text" title="Enter % OR value (ex: 10% or 10.50)" class="form-control calculate invoice_product_discount" 
+							name="invoice_product_discount[]" placeholder="Enter % OR value (ex: 10% or 10.50)"/>
+					</div>
+				</td>
+				<td class="text-right">
+					<div class="input-group input-group-md">
+						<span class="input-group-addon">
+							<?php echo CURRENCY ?> &nbsp;
+						</span>
+						<input type="text" class="form-control calculate-sub calculate invoice_product_sub" name="invoice_product_sub[]"
+							 value="0.00" aria-describedby="sizing-addon1" disabled>
+					</div>
+				</td>
+			</tr>
+
+
+		</tbody>
+	</table>
+	<div id="invoice_totals" class="padding-right row text-right">
+		<div class="col-xs-6">
+			<div class="input-group form-group-sm textarea no-margin-bottom">
+				<textarea class="form-control" name="invoice_notes" placeholder="Additional Notes..."></textarea>
+
+
+ 
+
+			</div>
+
+
+		</div>
+
+
+		<div class="col-xs-6 no-padding-right">
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong>Sub Total:</strong>
+				</div>
+				<div class="col-xs-3">
+					<?php echo CURRENCY ?> &nbsp;<span class="invoice-sub-total">0.00</span>
+					<input type="hidden" name="invoice_subtotal" id="invoice_subtotal">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong>Discount:</strong>
+				</div>
+				<div class="col-xs-3">
+					<?php echo CURRENCY ?> &nbsp;<span class="invoice-discount">0.00</span>
+					<input type="hidden" name="invoice_discount" id="invoice_discount">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong class="shipping">Service Charge:</strong>
+				</div>
+				<div class="col-xs-3">
+					<div class="input-group input-group-sm">
+						<span class="input-group-addon">
+							<?php echo CURRENCY ?> &nbsp;
+						</span>
+						<input type="text" class="form-control calculate servicecharge" name="servicecharge"
+							aria-describedby="sizing-addon1" placeholder="0.00" value="0.00">
+					</div>
+				</div>
+			</div>
+			<?php if (ENABLE_VAT == True) { ?>
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong>TAX/VAT:</strong><br>Remove TAX/VAT <input type="checkbox" disabled class="remove_vat">
+				</div>
+				<div class="col-xs-3">
+					<?php echo CURRENCY ?> &nbsp;<span class="invoice-vat" data-enable-vat="<?php echo ENABLE_VAT ?>"
+						data-vat-rate="<?php echo VAT_RATE ?>" data-vat-method="<?php echo VAT_INCLUDED ?>">0.00</span>
+					<input type="hidden" name="invoice_vat" id="invoice_vat">
+				</div>
+			</div>
+			<?php } ?>
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong>Total:</strong>
+				</div>
+				<div class="col-xs-3">
+			
+<span id="fill_patient" class="btn btn-primary btn-xs add-to-patient-section"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></span>     
+<?php echo CURRENCY ?> &nbsp;<span class="invoice-total">0.00</span>
+    <input type="hidden" name="invoice_total" id="invoice_total">
+				</div>
+			</div>
+
+<br>
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong class="shipping">Patient Paying Cash:</strong>
+				</div>
+				<div class="col-xs-3">
+					<div class="input-group input-group-sm">
+						<span class="input-group-addon">
+							<?php echo CURRENCY ?> &nbsp;
+						</span>
+						<input type="number" class="form-control calculate invoice-patient-paying" name="invoice_patient_paying"
+						readonly ="sizing-addon1" placeholder="0.00" width="60%"  id="invoice_patient_paying" Placeholder="0.00">
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-xs-4 col-xs-offset-5">
+					<strong>Balance:</strong>
+				</div>
+				<div class="col-xs-3">
+					<?php echo CURRENCY ?> &nbsp;<span id="invoice_balance" class="invoice-balance">0.00</span>
+					<input type="hidden" name="invoice_bala" id="invoice_bala" >
+				</div>
+			</div>
+
+
+			
+		</div>
+
+
+		<div class="col-xs-6">
+			<input type="email" name="custom_email" id="custom_email" class="custom_email_textarea" placeholder="Enter custom email if you wish to override the default invoice type email msg!"></input>
+		</div>
+
+		<div class="col-xs-6 margin-top btn-group">
+			<input type="submit" id="action_create_invoice_from_invoice" class="btn btn-success float-right" value="Create Invoice"
+				data-loading-text="Creating...">
+		</div>
+
+
+	</div>
+	<div class="row">
+
+	</div>
+</form>
+
+
+
+<div id="insert" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Select Procedure</h4>
+			</div>
+			<div class="modal-body">
+			<?php popProductsList(); ?>
+			</div>
+			<div class="modal-footer">
+				<button type="button" data-dismiss="modal" class="btn btn-primary" id="selected">Add</button>
+				<button type="button" data-dismiss="modal" class="btn">Cancel</button>
+			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -428,7 +704,6 @@ if ((in_array('5', $user_permission))) {
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
-
 
 <?php
     include('footer.php');

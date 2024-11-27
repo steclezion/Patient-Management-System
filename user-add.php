@@ -108,14 +108,35 @@ if ((in_array('14', $user_permission))) {
 	<div class="checkbox" >
   <ul class="list-group" id ="ex1">
       <label><input type="checkbox" name="create_invoice" value="2" id="create_invoice">    Create Invoice      </label>
-	  <label><input type="checkbox" name="manage_invoice" value="3" id="manage_invoice">    Manage Invoice ,Manage Receipts      </label>&nbsp;
 	  <label><input type="checkbox" name="download_csv" value="4" id="download_csv">      Download Invoices   </label>&nbsp;
 	  <label><input type="checkbox" name="delete_invoice" value="17" id="delete_invoice" >   Delete Invoices   </label>&nbsp;
+
+	  <label><input type="checkbox" name="manage_invoice" value="3" id="manage_invoice">    Manage Invoice and Receipts      </label>&nbsp;
+	  <label><input type="checkbox" name="todays_receipts" value="22" id="todays_receipts">   Todays Receipts    </label>&nbsp;
+	  <label><input type="checkbox" name="request_from_dr" value="23" id="request_from_dr">   Request From Dr    </label>&nbsp;
+
+	 
 </ul>
     </div>
 
+	&nbsp;
+   <div class="checkbox" >
+	<ul class="list-group" id ="ex1">
+	 <label><input type="checkbox" name="Send_inquiries" value="24"  id="Send_inquiries"> Physician </label>&nbsp;
+    </ul>
+    </div>
+    &nbsp;
 
 	&nbsp;
+   <div class="checkbox" >
+	<ul class="list-group" id ="ex1">
+	 <label><input type="checkbox" name="Today_Request_from_Dr" value="25"  id="Today_Request_from_Dr"> Today's Request from Dr </label>&nbsp;
+	 <label><input type="checkbox" name="Request_from_Dr" value="26"  id="Request_from_Dr">  Request from Dr </label>&nbsp;
+
+	</ul>
+    </div>
+    &nbsp;
+
 
 	<div class="checkbox" >
 	<ul class="list-group" id ="ex1">
@@ -147,6 +168,19 @@ if ((in_array('14', $user_permission))) {
     </ul>
     </div>
 &nbsp; 
+
+
+&nbsp; 
+	<div class="checkbox" >
+	<ul class="list-group" id ="ex1" >
+	 <label><input type="checkbox" name="manufacturers" value="27" id="manufacturers" > Manufacturers</label> &nbsp;
+	  <label><input type="checkbox" name="Categories" value="28"  id="Categories" > Categories</label>&nbsp;
+	  <label><input type="checkbox" name="Medicines" value="29"  id="Medicines" > Medicines</label>&nbsp;
+	  <label><input type="checkbox" name="PInvoices" value="30"  id="PInvoices" > Pharmacy Invoices</label>&nbsp;
+    </ul>
+    </div>
+&nbsp; 
+
 
 
   <div class="checkbox" >

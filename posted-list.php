@@ -112,7 +112,7 @@ if ((in_array('3', $user_permission))) {
 								aria-hidden="true"></span></a> Choose Medicine</h4>
 				</th>
 				<th>
-					<h4>Qty</h4>
+					<h4>Quantiry/Dosage</h4>
 				</th>
 				
 				
@@ -143,7 +143,7 @@ if ((in_array('3', $user_permission))) {
             <select name="medicine_product[]" class="form-control form-group-sm item-input invoice_product required" name="medicine_name"  id="medicine_name" placeholder="Medicine Name" required="">
 				<option value="" selected> </option>
                 <?php
-                    $sql= "SELECT * FROM medicine  ";
+                    $sql= "SELECT * FROM medicine  order by medicine_name ASC ";
 					$results = $mysqli->query($sql);
          while($rsdepartment=$results->fetch_assoc())
                     {
@@ -156,8 +156,8 @@ echo "<option value='$rsdepartment[medicine_id]' >$rsdepartment[medicine_name]</
 				</td>
 				<td class="text-right">
 					<div class="form-group form-group-sm no-margin-bottom">
-						<input type="number" class="form-control invoice_product_qty calculate required"
-							name="invoice_product_qty[]" value="1" min="0"/>
+						<input type="text"  class="form-control invoice_product_qty calculate required"
+            style='width: 100%;'  	name="invoice_product_qty[]" value="1" min="0"/>
 					</div>
 				</td>
 		
@@ -165,10 +165,12 @@ echo "<option value='$rsdepartment[medicine_id]' >$rsdepartment[medicine_name]</
 				<td class="text-right">
 					<div class="input-group input-group-md">
 						
-						<input  type="text" class="form-control  invoice_product_sub required" style='width: 245%;'  id="Description_prescription"
-						name="Description[]" width="540px" height="100px"
+						<input  type="text" class="form-control  invoice_product_sub required" style='width: 200%;'  id="Description_prescription"
+						name="Description[]" width="540px" height="100px" value="--"
 						 aria-describedby="sizing-addon1" >
    
+
+             
            
            
 					</div>
@@ -234,10 +236,10 @@ echo "<option value='$rsdepartment[id]' >$rsdepartment[name]</option>";
                     }
                 ?>
             </select>   
-
+<div id="stat" style="display:block"> 
         <button type="button"  class="btn btn-success" title="Submit the inquiry from Dr to Pharmacy" id="Submit_to_pharmacy">Submit To Pharmacy</button>
 
-		
+                  </div>
 		<button type="button" data-dismiss="modal" class="btn">Cancel</button>
       </div>
     </div><!-- /.modal-content -->

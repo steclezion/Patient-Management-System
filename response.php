@@ -83,6 +83,7 @@ if ($action == 'email_invoice') {
 		));
 	}
 }
+
 // download invoice csv sheet
 if ($action == 'download_csv') {
 
@@ -143,6 +144,66 @@ if ($action == 'download_csv') {
 	//$mysqli->close();
 
 }
+
+
+// download invoice csv sheet
+if ($action == 'download_csv-p') {
+
+	header("Content-type: text/csv");
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+		die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+	}
+
+	$file_name = 'procedure-export-' . date('d-m-Y') . '.csv';   // file name
+	$file_path = 'downloads/' . $file_name; // file path
+
+	$file = fopen($file_path, "w"); // open a file in write mode
+	chmod($file_path, 0777);    // set the file permission
+
+	$query_table_columns_data = "SELECT * FROM invoicemgsys.products
+									ORDER BY product_id ASC";
+
+	if ($result_column_data = mysqli_query($mysqli, $query_table_columns_data)) {
+
+		// fetch table fields data
+		while ($column_data = $result_column_data->fetch_row()) {
+
+			$table_column_data = array();
+			foreach ($column_data as $data) {
+				$table_column_data[] = $data;
+			}
+
+			// Format array as CSV and write to file pointer
+			fputcsv($file, $table_column_data, ",", '"');
+		}
+	}
+
+	//if saving success
+	if ($result_column_data = mysqli_query($mysqli, $query_table_columns_data)) {
+		echo json_encode(array(
+			'status' => 'Success',
+			'message' => 'CSV has been generated and is available in the /downloads folder for future reference, you can download by <a href="downloads/' . $file_name . '">clicking here</a>.'
+		));
+	} else {
+		//if unable to create new record
+		echo json_encode(array(
+			'status' => 'Error',
+			//'message'=> 'There has been an error, please try again.'
+			'message' => 'There has been an error, please try again.<pre>' . $mysqli->error . '</pre><pre>' . $query . '</pre>'
+		));
+	}
+
+
+	// close file pointer
+	fclose($file);
+
+	//$mysqli->close();
+
+}
+
+
 
 //Add add_category
 
@@ -3027,15 +3088,73 @@ if ($action == 'create_inquiry_to_pharmacy') {
 	));
 }
 
+
+if($action == 'retirieve_balanceL')
+{
+
+	$invoice_id =  addslashes($_POST['invoice']);
+    
+	 $get_balance = "SELECT *,  b.invoice_type as binv_type , count(b.invoice_id) as counted_b , i.invoice as invoice_right, b.Timestamp as btimestamp
+		from invoices i
+         Join balance_invoices b
+		ON b.invoice_id = i.invoice
+        WHERE ( b.old_invoice_id = '$invoice_id' and   b.invoice_type = 'Laboratory')
+        Group by b.invoice_id
+		ORDER BY i.invoice ASC";
+
+		// mysqli select query
+		$results = $mysqli->query($get_balance);
+		$i=1;
+		$return_data='';
+
+
+    while ($row = $results->fetch_assoc()) {
+	
+		$search = '/';
+		$replace = '_';
+		$subject = $row["invoice_right"];
+
+		$invoice_number = str_replace($search, $replace, $subject); 
+
+		$link =  '<a href="invoices/'.$invoice_number.'.pdf" class="btn btn-success btn-xs" target="_blank">
+		<span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>';
+
+			$return_data .= "<tr><td>" . $i++ . "</td>";
+			$return_data .= "<td><b style='color:green'>".number_format($row['total'],2) . "</b></td>";
+			
+			$return_data .= "<td>" .number_format($row['patient_paid'],2). "</td>";
+			$return_data .= "<td><b style='color:red'>" .number_format($row['remained_balance'],2). "</b></td>";
+			$return_data .= "<td>" .$link. "</td>";
+			$return_data .= "<td>" .$row['btimestamp']. "</td>";
+
+		
+
+		}
+
+
+
+		echo json_encode(array(
+			'status' => 'Success',
+			'message' => 'Retrieval',
+			'data_returned' => $return_data,
+		
+		));
+
+
+}
+
+
+
+
 if($action == 'retirieve_balance')
 {
 	$invoice_id =  addslashes($_POST['invoice']);
     
-		$get_balance = "SELECT *,  b.invoice_type as binv_type , count(b.invoice_id) as counted_b , i.invoice as invoice_right, b.Timestamp as btimestamp
+		 $get_balance = "SELECT *,  b.invoice_type as binv_type , count(b.invoice_id) as counted_b , i.invoice as invoice_right, b.Timestamp as btimestamp
 		from invoices i
          Join balance_invoices b
 		ON b.invoice_id = i.invoice
-        WHERE b.old_invoice_id = '$invoice_id'
+        WHERE ( b.old_invoice_id = '$invoice_id' and   b.invoice_type <> 'Laboratory')
         Group by b.invoice_id
 		ORDER BY i.invoice ASC";
 
@@ -3078,6 +3197,448 @@ if($action == 'retirieve_balance')
 		));
 
 }
+
+
+//update_invoice_laboratory
+
+if ($action == 'update_invoice_laboratory')
+ {
+
+
+		// invoice customer information
+	// billing
+	$tranaction_id =  addslashes($_POST['transaction_id']);
+
+	$get_invoice_id = addslashes($_POST['get_invoice_id']);
+	$unchanged = addslashes($_POST['unchanged']);
+	$limited_price = addslashes($_POST['limited_price']);
+
+	$customer_name = addslashes($_POST['customer_name']); // customer name
+	$customer_email = addslashes($_POST['customer_town']); // customer email
+	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
+	$customer_address_2 = addslashes($_POST['customer_sex']); // customer address
+	$customer_town = addslashes($_POST['customer_town']); // customer town
+	$customer_county = ''; //addslashes($_POST['customer_town']); // customer county
+	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
+
+	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
+
+	$customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
+
+	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
+
+	$customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
+	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
+	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
+	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
+	$customer_county_ship = ''; //addslashes($_POST['doctor_title']); // customer county (shipping)
+	$customer_postcode_ship = ''; //addslashes($_POST['doctor_title']); // customer postcode (shipping)
+
+	// invoice details
+	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
+	//$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
+
+	//Date Invoice 
+	$invoice_date = ($_POST['invoice_date']); // invoice date
+	$inv_date =  explode('/', $invoice_date);
+	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
+
+	$date = date_create($inv_date);
+	$invoice_date = date_format($date, "Y-m-d");
+
+
+
+
+	$custom_email = "";
+
+	$invoice_balance =  addslashes($_POST['limited_price']); // custom invoice balance
+	$customer_paying_cash = addslashes($_POST['invoice_patient_paying']); // custom invoice_patient_paying
+    $unchanged_remaind_balance = addslashes($_POST['unchanged']); // unchanged
+
+
+	//Date Invoice_due
+	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
+	$inv_date =  explode('/', $invoice_due_date);
+	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
+	$date = date_create($inv_date);
+	$invoice_due_date = date_format($date, "Y-m-d");
+
+	$invoice_subtotal = addslashes($_POST['invoice_subtotal']); // invoice sub-total
+	$invoice_shipping = addslashes($_POST['servicecharge']); // invoice shipping amount
+	$invoice_discount = addslashes($_POST['invoice_discount']); // invoice discount
+	//$invoice_vat = $_POST['invoice_vat']; // invoice vat
+	$invoice_total = addslashes($_POST['invoice_total']); // invoice total
+	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
+	$invoice_type = addslashes($_POST['invoice_type']); // Invoice $invoice_notes
+	$invoice_notes='';
+	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
+	$remained_final_balance = addslashes($_POST['remained_final_balance']); // remained_final_balance
+
+
+if($remained_final_balance == ''){$remained_final_balance=0;}
+
+
+
+	session_start();
+	$_SESSION['login_username'];
+	$id = $_SESSION['login_user_id'];
+	$invoice_which = 'Regular-Pharmacy';
+	// insert invoice into database
+	$query = "INSERT INTO invoices (
+					invoice,
+					custom_email,
+					invoice_date, 
+					invoice_due_date, 
+					subtotal, 
+					shipping, 
+					discount, 
+					vat, 
+					total,
+					notes,
+					invoice_type,
+					invoice_registration,
+					invoice_intially_created_by,
+					invoice_which,
+					status
+				) VALUES (
+				  	'" .$invoice_number. "',
+				  	'" . $custom_email . "',
+				  	'" . $invoice_date . "',
+				  	'" . $invoice_due_date . "',
+				  	'" . $invoice_subtotal . "',
+				  	'" . $invoice_shipping . "',
+				  	'" . $invoice_discount . "',
+				  	'0',
+				  	'" . $invoice_total . "',
+				  	'" . $invoice_notes . "',
+				  	'" . $invoice_type . "',
+					'new',
+					'" . $id . "',
+					'" . $invoice_which . "',
+				  	'" . $invoice_status . "'
+			    );
+			";
+
+
+	// insert customer details into database
+	$query .= "INSERT INTO customers (
+					invoice,
+					name,
+					email,
+					address_1,
+					address_2,
+					town,
+					county,
+					postcode,
+					phone,
+					name_ship,
+					address_1_ship,
+					address_2_ship,
+					town_ship,
+					county_ship,
+					postcode_ship,
+					company_name
+				) VALUES (
+					'" . $invoice_number . "',
+					'" . $customer_name . "',
+					'" . $customer_email . "',
+					'" . $customer_address_1 . "',
+					'" . $customer_address_2 . "',
+					'" . $customer_town . "',
+					'" . $customer_county . "',
+					'" . $customer_postcode . "',
+					'" . $customer_phone . "',
+					'" . $customer_name_ship . "',
+					'" . $customer_address_1_ship . "',
+					'" . $customer_address_2_ship . "',
+					'" . $customer_town_ship . "',
+					'" . $customer_county_ship . "',
+					'" . $customer_postcode_ship . "',
+					'" . $customer_company_name . "'
+				);
+			";
+
+
+	// invoice product items
+	foreach ($_POST['invoice_product'] as $key => $value) {
+		//$item_product = addslashes($value);
+
+
+		$item_product = str_replace("'", '', $value);
+
+		// $item_description = $_POST['invoice_product_desc'][$key];
+		$item_qty = addslashes($_POST['invoice_product_qty'][$key]);
+		$item_price = addslashes($_POST['invoice_product_price'][$key]);
+		$item_discount = addslashes($_POST['invoice_product_discount'][$key]);
+		$item_subtotal = addslashes($_POST['invoice_product_sub'][$key]);
+
+		// insert invoice items into database
+		$query .= "INSERT INTO invoice_items (
+				invoice,
+				product,
+				qty,
+				price,
+				discount,
+				subtotal
+			) VALUES (
+				'" . $invoice_number . "',
+				'" . $item_product . "',
+				'" . $item_qty . "',
+				'" . $item_price . "',
+				'" . $item_discount . "',
+				'" . $item_subtotal . "'
+			);
+		";
+	}
+
+	
+	$query_count = "select * from balance_invoices where old_invoice_id = '$get_invoice_id' order by id DESC limit 1 ";
+	$result_count = $mysqli->query($query_count);
+	$fetch_result = $result_count->fetch_assoc();
+	$count = $fetch_result['Count']+1; 
+
+
+	$query_balance = "INSERT INTO `balance_invoices`
+(        `invoice_id`,
+         `total`,
+         `patient_paid`,
+         `remained_balance`,
+         `Count`,
+         `Timestamp`,
+         `invoice_type`,
+		 `old_invoice_id`)
+	 VALUES (
+		'" . $invoice_number . "',
+	     '" . $unchanged. "',
+		'" . $customer_paying_cash . "',
+		'" . $remained_final_balance. "',
+		'" . $count . "',
+		Now(),
+		'Laboratory',
+		'".$get_invoice_id."'
+	);
+";
+
+
+
+
+
+	if ($unchanged <= 0) {
+		$invoice_status = 'Paid'; //Add Badge
+		$query_update_ = "UPDATE task_tracker  SET  `status` = '$invoice_status'  WHERE `id` = '$tranaction_id' ";
+		$results = $mysqli->query($query_update_);
+	}
+	else{
+		$balance = $mysqli->query($query_balance);
+		$invoice_status = 'Partial Paid';
+		$query_update_ = "UPDATE task_tracker  SET  `status` = '$invoice_status'  WHERE `id` = '$tranaction_id' ";
+		$results = $mysqli->query($query_update_);
+		}
+
+   header('Content-Type: application/json');
+
+
+	// execute the query
+	if ($mysqli->multi_query($query)) {
+
+
+
+		//if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message' => 'Invoice has been created successfully!',
+			'invoice_type' => $invoice_type
+		));
+
+		//Set default date timezone
+		date_default_timezone_set(TIMEZONE);
+		//Include Invoicr class
+		include('invoice_pharmacy.php');
+
+
+
+		//Create a new instance
+		$invoice = new invoicr("A4", CURRENCY, "en");
+		//Set number formatting
+		$invoice->setNumberFormat('.', ',');
+		//Set your logo
+		$invoice->setLogo(COMPANY_LOGO, COMPANY_LOGO_WIDTH, COMPANY_LOGO_HEIGHT);
+		//Set theme color
+		$invoice->setColor(INVOICE_THEME);
+		//Set type
+		$invoice->setType($invoice_type);
+		//Set reference
+		$invoice->setReference($invoice_number);
+		//Set date
+		$invoice->setDate($invoice_date);
+		//Set due date
+		$invoice->setDue($invoice_due_date);
+		//Set from
+
+		@$invoice->setFrom(array(COMPANY_NAME, COMPANY_ADDRESS_1, COMPANY_ADDRESS_2, COMPANY_COUNTY, COMPANY_POSTCODE, COMPANY_NAME_, COMPANY_NUMBER, COMPANY_NUMBER2));
+
+
+		//Set to
+		@$invoice->setTo(array($customer_name, $customer_address_1, $customer_address_2, $customer_town, $customer_county, $customer_postcode, $customer_company_name, "Phone: " . $customer_phone));
+
+
+
+		//Ship to
+		@$invoice->shipTo(array($customer_name_ship, $customer_address_1_ship, $customer_address_2_ship, $customer_town_ship, $customer_county_ship, $customer_postcode_ship, ''));
+		//Add items
+		// invoice product items
+		foreach ($_POST['invoice_product'] as $key => $value) {
+
+			$item_product = ($value);
+
+
+			// $item_description = $_POST['invoice_product_desc'][$key];
+			$item_qty = $_POST['invoice_product_qty'][$key];
+			$item_price = $_POST['invoice_product_price'][$key];
+			$item_discount = $_POST['invoice_product_discount'][$key];
+			$item_subtotal = $_POST['invoice_product_sub'][$key];
+
+			if (ENABLE_VAT == false) {
+				$item_vat = (VAT_RATE / 100) * $item_subtotal;
+			}
+
+			$invoice->addItem($item_product, '', $item_qty, $item_vat, $item_price, $item_discount, $item_subtotal);
+		}
+		//Add totals
+		$invoice->addTotal("Total", $invoice_subtotal);
+		if (!empty($invoice_discount)) {
+			$invoice->addTotal("Discount", $invoice_discount);
+		}
+		if (!empty($invoice_shipping)) {
+			$invoice->addTotal("Service charge", $invoice_shipping);
+		}
+		if (ENABLE_VAT == true) {
+			$invoice->addTotal("TAX/VAT " . VAT_RATE . "%", $invoice_vat);
+		}
+
+		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	    $get_balance = "SELECT *,  b.invoice_type as binv_type , i.invoice as invoice_right, b.Timestamp as btimestamp
+		  from invoices i
+		 Join balance_invoices b ON b.invoice_id = i.invoice
+	     WHERE b.old_invoice_id = '$get_invoice_id'
+	     ORDER BY i.invoice ASC";
+		
+		// mysqli select query
+		$result_s = $mysqli->query($get_balance);
+        $i=0;$payment_terms='';
+		
+		
+		while ($row = $result_s->fetch_assoc()) {
+			$i++;
+	     if($row['Count'] == $i) {
+				
+				$invoice->addTotal("Cust.Paid-".$i, $row['patient_paid'], true);
+				$invoice->addTotal("Balance", $row['remained_balance'], true);
+			}
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+		// $invoice->addTotal("Total Due", $invoice_total, true);
+		// $invoice->addTotal("Cust.Paid", $customer_paying_cash, true);
+		// $invoice->addTotal("Balance", $invoice_balance, true);
+
+
+
+		if ($remained_final_balance  <= 0) {
+			$invoice_status = 'Paid'; //Add Badge
+			
+		    $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+	        $query_update__ = "UPDATE invoices  SET  `status` = 'paid'  WHERE `invoice` = '$invoice_number' ";
+			$results_ = $mysqli->query($query_update__);
+
+
+			$query_update_ = "UPDATE task_tracker  SET  `status` = 'Payment Finished'  WHERE `id` = '$tranaction_id' ";
+			$results = $mysqli->query($query_update_);
+
+
+            $invoice->addBadge($invoice_status);
+			$invoice->SetTextColor(100, 0, 0);
+
+
+		} else {
+			$invoice_status = 'Partial Paid';
+			
+		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+			$query_update_ = "UPDATE task_tracker  SET  `status` = 'Partial Paid'  WHERE `id` = '$tranaction_id' ";
+			$results = $mysqli->query($query_update_);
+			//Add Badge
+			$invoice->addBadge($invoice_status);
+			$invoice->SetTextColor(204, 0, 0);
+
+		}
+
+
+		// Customer notes:
+		if (!empty($invoice_notes)) {
+			$invoice->addTitle("Customer Notes");
+			$invoice->addParagraph($invoice_notes);
+		}
+		//Add Title
+		$invoice->addTitle("Payment information");
+		//Add Paragraph
+		$invoice->addParagraph(PAYMENT_DETAILS);
+		//Set footer note
+		$invoice->setFooternote(FOOTER_NOTE);
+		//Render the PDF
+
+		$search = '/';
+		$replace = '_';
+		$subject = $invoice_number;
+
+		$invoice_number = str_replace($search, $replace, $subject);
+
+		$invoice->render('invoices/' . $invoice_number . '.pdf', 'F');
+
+		$link = 'invoices/' . $invoice_number . '.pdf';
+
+		$subject = trim($subject);
+
+		// Connect to the database
+		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
+
+		$results = $mysqli->query($query_update);
+	} else {
+		// if unable to create invoice
+		echo json_encode(array(
+			'status' => 'Error',
+			//'message' => 'There has been an error, please try again.'
+			// debug
+			//'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+		));
+
+}
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //update_invoice_pharmacy
@@ -3403,7 +3964,7 @@ if($remained_final_balance == ''){$remained_final_balance=0;}
 	    $get_balance = "SELECT *,  b.invoice_type as binv_type , i.invoice as invoice_right, b.Timestamp as btimestamp
 		  from invoices i
 		 Join balance_invoices b ON b.invoice_id = i.invoice
-	     WHERE b.old_invoice_id = '$get_invoice_id'
+	     WHERE ( b.old_invoice_id = '$get_invoice_id' and i.invoice_which = 'Regular-Pharmacy')
 	     ORDER BY i.invoice ASC";
 		
 		// mysqli select query
@@ -3494,7 +4055,7 @@ if($remained_final_balance == ''){$remained_final_balance=0;}
 
 		// Connect to the database
 		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject',  `status`= 'Payment Finishied', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
+		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
 
 		$results = $mysqli->query($query_update);
 	} else {
@@ -3508,6 +4069,10 @@ if($remained_final_balance == ''){$remained_final_balance=0;}
 
 }
 
+
+
+
+
  }
 
 
@@ -3520,340 +4085,16 @@ if($remained_final_balance == ''){$remained_final_balance=0;}
 
 
  
- //create_invoice_from_pharmacy_new
+ //create_invoice_from_invoice_from_pharmacy
 
-if($action == 'create_invoice_from_pharmacy_new')
+if($action == 'create_invoice_from_invoice_from_pharmacy')
 {
 
-// 	// invoice customer information
-// 	// billing
-// 	// $tranaction_id =  addslashes($_POST['transaction_id']);
-// 	// $get_invoice_id = addslashes($_POST['get_invoice_id']);
-
-// 	$customer_name = addslashes($_POST['customer_name']); // customer name
-// 	$customer_email = addslashes($_POST['customer_town']); // customer email
-// 	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
-// 	$customer_address_2 = addslashes($_POST['customer_sex']); // customer address
-// 	$customer_town = addslashes($_POST['customer_town']); // customer town
-// 	$customer_county = ''; //addslashes($_POST['customer_town']); // customer county
-// 	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
-
-// 	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
-
-// 	$customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
-
-// 	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
-
-// 	$customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
-// 	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
-// 	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
-// 	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
-// 	$customer_county_ship = ''; //addslashes($_POST['doctor_title']); // customer county (shipping)
-// 	$customer_postcode_ship = ''; //addslashes($_POST['doctor_title']); // customer postcode (shipping)
-
-// 	// invoice details
-// 	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
-// 	$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
-
-// 	//Date Invoice 
-// 	$invoice_date = ($_POST['invoice_date']); // invoice date
-// 	$inv_date =  explode('/', $invoice_date);
-// 	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
-
-// 	$date = date_create($inv_date);
-// 	$invoice_date = date_format($date, "Y-m-d");
-
-
-
-
-// 	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
-
-
-
-
-// 	//Date Invoice_due
-// 	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
-// 	$inv_date =  explode('/', $invoice_due_date);
-// 	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
-// 	$date = date_create($inv_date);
-// 	$invoice_due_date = date_format($date, "Y-m-d");
-
-// 	$invoice_subtotal = addslashes($_POST['invoice_subtotal']); // invoice sub-total
-// 	$invoice_shipping = addslashes($_POST['servicecharge']); // invoice shipping amount
-// 	$invoice_discount = addslashes($_POST['invoice_discount']); // invoice discount
-// 	//$invoice_vat = $_POST['invoice_vat']; // invoice vat
-// 	$invoice_total = addslashes($_POST['invoice_total']); // invoice total
-// 	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
-// 	$invoice_type = addslashes($_POST['invoice_type']); // Invoice type
-// 	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
-
-
-
-
-
-
-// 	session_start();
-// 	$_SESSION['login_username'];
-// 	$id = $_SESSION['login_user_id'];
-// 	$invoice_which = 'Regular-Pharmacy';
-// 	// insert invoice into database
-// 	$query = "INSERT INTO invoices (
-// 					invoice,
-// 					custom_email,
-// 					invoice_date, 
-// 					invoice_due_date, 
-// 					subtotal, 
-// 					shipping, 
-// 					discount, 
-// 					vat, 
-// 					total,
-// 					notes,
-// 					invoice_type,
-// 					invoice_registration,
-// 					invoice_intially_created_by,
-// 					invoice_which,
-// 					status
-// 				) VALUES (
-// 				  	'" . $invoice_number . "',
-// 				  	'" . $custom_email . "',
-// 				  	'" . $invoice_date . "',
-// 				  	'" . $invoice_due_date . "',
-// 				  	'" . $invoice_subtotal . "',
-// 				  	'" . $invoice_shipping . "',
-// 				  	'" . $invoice_discount . "',
-// 				  	'0',
-// 				  	'" . $invoice_total . "',
-// 				  	'" . $invoice_notes . "',
-// 				  	'" . $invoice_type . "',
-// 					'new',
-// 					'" . $id . "',
-// 					'" . $invoice_which . "',
-// 				  	'" . $invoice_status . "'
-// 			    );
-// 			";
-
-
-// 	// insert customer details into database
-// 	$query .= "INSERT INTO customers (
-// 					invoice,
-// 					name,
-// 					email,
-// 					address_1,
-// 					address_2,
-// 					town,
-// 					county,
-// 					postcode,
-// 					phone,
-// 					name_ship,
-// 					address_1_ship,
-// 					address_2_ship,
-// 					town_ship,
-// 					county_ship,
-// 					postcode_ship,
-// 					company_name
-// 				) VALUES (
-// 					'" . $invoice_number . "',
-// 					'" . $customer_name . "',
-// 					'" . $customer_email . "',
-// 					'" . $customer_address_1 . "',
-// 					'" . $customer_address_2 . "',
-// 					'" . $customer_town . "',
-// 					'" . $customer_county . "',
-// 					'" . $customer_postcode . "',
-// 					'" . $customer_phone . "',
-// 					'" . $customer_name_ship . "',
-// 					'" . $customer_address_1_ship . "',
-// 					'" . $customer_address_2_ship . "',
-// 					'" . $customer_town_ship . "',
-// 					'" . $customer_county_ship . "',
-// 					'" . $customer_postcode_ship . "',
-// 					'" . $customer_company_name . "'
-// 				);
-// 			";
-
-
-// 	// invoice product items
-// 	foreach ($_POST['invoice_product'] as $key => $value) {
-// 		//$item_product = addslashes($value);
-
-
-// 		$item_product = str_replace("'", '', $value);
-
-// 		// $item_description = $_POST['invoice_product_desc'][$key];
-// 		$item_qty = addslashes($_POST['invoice_product_qty'][$key]);
-// 		$item_price = addslashes($_POST['invoice_product_price'][$key]);
-// 		$item_discount = addslashes($_POST['invoice_product_discount'][$key]);
-// 		$item_subtotal = addslashes($_POST['invoice_product_sub'][$key]);
-
-// 		// insert invoice items into database
-// 		$query .= "INSERT INTO invoice_items (
-// 				invoice,
-// 				product,
-// 				qty,
-// 				price,
-// 				discount,
-// 				subtotal
-// 			) VALUES (
-// 				'" . $invoice_number . "',
-// 				'" . $item_product . "',
-// 				'" . $item_qty . "',
-// 				'" . $item_price . "',
-// 				'" . $item_discount . "',
-// 				'" . $item_subtotal . "'
-// 			);
-// 		";
-// 	}
-
-// 	$count = 1;$invoice_balance =0;
-// 	$query_balance = "INSERT INTO `balance_invoices`
-// (        `invoice_id`,
-//          `total`,
-//          `patient_paid`,
-//          `remained_balance`,
-//          `Count`,
-//          `Timestamp`,
-//          `invoice_type`,
-// 		 `old_invoice_id`)
-// 	 VALUES (
-// 		'" . $invoice_number . "',
-// 	    '" . $invoice_total . "',
-// 		'" . $invoice_total. "',
-// 		'" . $invoice_balance . "',
-// 		'" . $count . "',
-// 		Now(),
-// 		'Pharmacy',
-// 		'".$invoice_number."'
-// 	);
-// ";
-	
-		
-// $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-// $results_ = $mysqli->query($query_balance);
-
-
-
-// 	header('Content-Type: application/json');
-
-// 	// execute the query
-// 	if ($mysqli->multi_query($query)) {
-
-
-
-// 		//if saving success
-// 		echo json_encode(array(
-// 			'status' => 'Success',
-// 			'message' => 'Invoice has been created successfully!',
-// 			'invoice_type' => $invoice_type
-// 		));
-
-// 		//Set default date timezone
-// 		date_default_timezone_set(TIMEZONE);
-// 		//Include Invoicr class
-// 		include('invoice_pharmacy.php');
-
-
-
-// 		//Create a new instance
-// 		$invoice = new invoicr("A4", CURRENCY, "en");
-// 		//Set number formatting
-// 		$invoice->setNumberFormat('.', ',');
-// 		//Set your logo
-// 		$invoice->setLogo(COMPANY_LOGO, COMPANY_LOGO_WIDTH, COMPANY_LOGO_HEIGHT);
-// 		//Set theme color
-// 		$invoice->setColor(INVOICE_THEME);
-// 		//Set type
-// 		$invoice->setType($invoice_type);
-// 		//Set reference
-// 		$invoice->setReference($invoice_number);
-// 		//Set date
-// 		$invoice->setDate($invoice_date);
-// 		//Set due date
-// 		$invoice->setDue($invoice_due_date);
-// 		//Set from
-
-// 		@$invoice->setFrom(array(COMPANY_NAME, COMPANY_ADDRESS_1, COMPANY_ADDRESS_2, COMPANY_COUNTY, COMPANY_POSTCODE, COMPANY_NAME_, COMPANY_NUMBER, COMPANY_NUMBER2));
-
-
-// 		//Set to
-// 		@$invoice->setTo(array($customer_name, $customer_address_1, $customer_address_2, $customer_town, $customer_county, $customer_postcode, $customer_company_name, "Phone: " . $customer_phone));
-
-
-
-// 		//Ship to
-// 		@$invoice->shipTo(array($customer_name_ship, $customer_address_1_ship, $customer_address_2_ship, $customer_town_ship, $customer_county_ship, $customer_postcode_ship, ''));
-// 		//Add items
-// 		// invoice product items
-// 		foreach ($_POST['invoice_product'] as $key => $value) {
-
-// 			$item_product = ($value);
-
-
-// 			// $item_description = $_POST['invoice_product_desc'][$key];
-// 			$item_qty = $_POST['invoice_product_qty'][$key];
-// 			$item_price = $_POST['invoice_product_price'][$key];
-// 			$item_discount = $_POST['invoice_product_discount'][$key];
-// 			$item_subtotal = $_POST['invoice_product_sub'][$key];
-
-// 			if (ENABLE_VAT == false) {
-// 				$item_vat = (VAT_RATE / 100) * $item_subtotal;
-// 			}
-
-// 			$invoice->addItem($item_product, '', $item_qty, $item_vat, $item_price, $item_discount, $item_subtotal);
-// 		}
-// 		//Add totals
-// 		$invoice->addTotal("Total", $invoice_subtotal);
-// 		if (!empty($invoice_discount)) {
-// 			$invoice->addTotal("Discount", $invoice_discount);
-// 		}
-// 		if (!empty($invoice_shipping)) {
-// 			$invoice->addTotal("Service charge", $invoice_shipping);
-// 		}
-// 		if (ENABLE_VAT == true) {
-// 			$invoice->addTotal("TAX/VAT " . VAT_RATE . "%", $invoice_vat);
-// 		}
-
-// 		// Customer notes:
-// 		if (!empty($invoice_notes)) {
-// 			$invoice->addTitle("Customer Notes");
-// 			$invoice->addParagraph($invoice_notes);
-// 		}
-// 		//Add Title
-// 		$invoice->addTitle("Payment information");
-// 		//Add Paragraph
-// 		$invoice->addParagraph(PAYMENT_DETAILS);
-// 		//Set footer note
-// 		$invoice->setFooternote(FOOTER_NOTE);
-// 		//Render the PDF
-
-// 		$search = '/';
-// 		$replace = '_';
-// 		$subject = $invoice_number;
-
-// 		$invoice_number = str_replace($search, $replace, $subject);
-
-// 		$invoice->render('invoices/' . $invoice_number . '.pdf', 'F');
-
-// 		$link = 'invoices/' . $invoice_number . '.pdf';
-
-// 		$subject = trim($subject);
-
-
-// 	} else {
-// 		// if unable to create invoice
-// 		echo json_encode(array(
-// 			'status' => 'Error',
-// 			//'message' => 'There has been an error, please try again.'
-// 			// debug
-// 			//'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-// 		));
-// 	}
-
-// 	//close database connection
-// 	//$mysqli->close();
-
-
-// invoice customer information
+	// invoice customer information
 	// billing
+	$tranaction_id =  addslashes($_POST['transaction_id']);
+	$get_invoice_id = addslashes($_POST['get_invoice_id']);
+
 	$customer_name = addslashes($_POST['customer_name']); // customer name
 	$customer_email = addslashes($_POST['customer_town']); // customer email
 	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
@@ -3869,6 +4110,380 @@ if($action == 'create_invoice_from_pharmacy_new')
 	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
 
 	$customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
+	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
+	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
+	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
+	$customer_county_ship = ''; //addslashes($_POST['doctor_title']); // customer county (shipping)
+	$customer_postcode_ship = ''; //addslashes($_POST['doctor_title']); // customer postcode (shipping)
+	$customer_paying_cash = addslashes($_POST['invoice_patient_paying']); // custom invoice_patient_paying
+	// invoice details
+	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
+	$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
+
+	//Date Invoice 
+	$invoice_date = ($_POST['invoice_date']); // invoice date
+	$inv_date =  explode('/', $invoice_date);
+	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
+
+	$date = date_create($inv_date);
+	$invoice_date = date_format($date, "Y-m-d");
+
+
+
+
+	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
+
+
+
+
+	//Date Invoice_due
+	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
+	$inv_date =  explode('/', $invoice_due_date);
+	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
+	$date = date_create($inv_date);
+	$invoice_due_date = date_format($date, "Y-m-d");
+
+	$invoice_subtotal = addslashes($_POST['invoice_subtotal']); // invoice sub-total
+	$invoice_shipping = addslashes($_POST['servicecharge']); // invoice shipping amount
+	$invoice_discount = addslashes($_POST['invoice_discount']); // invoice discount
+	//$invoice_vat = $_POST['invoice_vat']; // invoice vat
+	$invoice_total = addslashes($_POST['invoice_total']); // invoice total
+	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
+	$invoice_type = addslashes($_POST['invoice_type']); // Invoice type
+	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
+	$invoice_balance = addslashes($_POST['invoice_bala']); // custom invoice balance
+	//$unchanged = addslashes($_POST['unchanged']);
+
+
+
+
+
+	session_start();
+	$_SESSION['login_username'];
+	$id = $_SESSION['login_user_id'];
+	$invoice_which = 'Regular-Pharmacy';
+	// insert invoice into database
+	$query = "INSERT INTO invoices (
+					invoice,
+					custom_email,
+					invoice_date, 
+					invoice_due_date, 
+					subtotal, 
+					shipping, 
+					discount, 
+					vat, 
+					total,
+					notes,
+					invoice_type,
+					invoice_registration,
+					invoice_intially_created_by,
+					invoice_which,
+					status
+				) VALUES (
+				  	'" . $invoice_number . "',
+				  	'" . $custom_email . "',
+				  	'" . $invoice_date . "',
+				  	'" . $invoice_due_date . "',
+				  	'" . $invoice_subtotal . "',
+				  	'" . $invoice_shipping . "',
+				  	'" . $invoice_discount . "',
+				  	'0',
+				  	'" . $invoice_total . "',
+				  	'" . $invoice_notes . "',
+				  	'" . $invoice_type . "',
+					'new',
+					'" . $id . "',
+					'" . $invoice_which . "',
+				  	'" . $invoice_status . "'
+			    );
+			";
+
+
+	// insert customer details into database
+	$query .= "INSERT INTO customers (
+					invoice,
+					name,
+					email,
+					address_1,
+					address_2,
+					town,
+					county,
+					postcode,
+					phone,
+					name_ship,
+					address_1_ship,
+					address_2_ship,
+					town_ship,
+					county_ship,
+					postcode_ship,
+					company_name
+				) VALUES (
+					'" . $invoice_number . "',
+					'" . $customer_name . "',
+					'" . $customer_email . "',
+					'" . $customer_address_1 . "',
+					'" . $customer_address_2 . "',
+					'" . $customer_town . "',
+					'" . $customer_county . "',
+					'" . $customer_postcode . "',
+					'" . $customer_phone . "',
+					'" . $customer_name_ship . "',
+					'" . $customer_address_1_ship . "',
+					'" . $customer_address_2_ship . "',
+					'" . $customer_town_ship . "',
+					'" . $customer_county_ship . "',
+					'" . $customer_postcode_ship . "',
+					'" . $customer_company_name . "'
+				);
+			";
+
+
+	// invoice product items
+	foreach ($_POST['invoice_product'] as $key => $value) {
+		//$item_product = addslashes($value);
+
+
+		$item_product = str_replace("'", '', $value);
+
+		// $item_description = $_POST['invoice_product_desc'][$key];
+		$item_qty = addslashes($_POST['invoice_product_qty'][$key]);
+		$item_price = addslashes($_POST['invoice_product_price'][$key]);
+		$item_discount = addslashes($_POST['invoice_product_discount'][$key]);
+		$item_subtotal = addslashes($_POST['invoice_product_sub'][$key]);
+
+		// insert invoice items into database
+		$query .= "INSERT INTO invoice_items (
+				invoice,
+				product,
+				qty,
+				price,
+				discount,
+				subtotal
+			) VALUES (
+				'" . $invoice_number . "',
+				'" . $item_product . "',
+				'" . $item_qty . "',
+				'" . $item_price . "',
+				'" . $item_discount . "',
+				'" . $item_subtotal . "'
+			);
+		";
+	}
+
+	$count = 1;
+	$query_balance = "INSERT INTO `balance_invoices`
+(        `invoice_id`,
+         `total`,
+         `patient_paid`,
+         `remained_balance`,
+         `Count`,
+         `Timestamp`,
+         `invoice_type`,
+		 `old_invoice_id`)
+	 VALUES (
+		'" . $invoice_number . "',
+	     '" .$invoice_total. "',
+		'" . $customer_paying_cash . "',
+          	'" . $invoice_balance . "',
+		'" . $count . "',
+		Now(),
+		'Pharmacy',
+			'".$get_invoice_id."'
+	);
+";
+	
+		
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+$results_ = $mysqli->query($query_balance);
+
+
+
+	header('Content-Type: application/json');
+
+	// execute the query
+	if ($mysqli->multi_query($query)) {
+
+
+
+		//if saving success
+		echo json_encode(array(
+			'status' => 'Success',
+			'message' => 'Invoice has been created successfully!',
+			'invoice_type' => $invoice_type
+		));
+
+		//Set default date timezone
+		date_default_timezone_set(TIMEZONE);
+		//Include Invoicr class
+		include('invoice_pharmacy.php');
+
+
+
+		//Create a new instance
+		$invoice = new invoicr("A4", CURRENCY, "en");
+		//Set number formatting
+		$invoice->setNumberFormat('.', ',');
+		//Set your logo
+		$invoice->setLogo(COMPANY_LOGO, COMPANY_LOGO_WIDTH, COMPANY_LOGO_HEIGHT);
+		//Set theme color
+		$invoice->setColor(INVOICE_THEME);
+		//Set type
+		$invoice->setType($invoice_type);
+		//Set reference
+		$invoice->setReference($invoice_number);
+		//Set date
+		$invoice->setDate($invoice_date);
+		//Set due date
+		$invoice->setDue($invoice_due_date);
+		//Set from
+
+		@$invoice->setFrom(array(COMPANY_NAME, COMPANY_ADDRESS_1, COMPANY_ADDRESS_2, COMPANY_COUNTY, COMPANY_POSTCODE, COMPANY_NAME_, COMPANY_NUMBER, COMPANY_NUMBER2));
+
+
+		//Set to
+		@$invoice->setTo(array($customer_name, $customer_address_1, $customer_address_2, $customer_town, $customer_county, $customer_postcode, $customer_company_name, "Phone: " . $customer_phone));
+
+
+
+		//Ship to
+		@$invoice->shipTo(array($customer_name_ship, $customer_address_1_ship, $customer_address_2_ship, $customer_town_ship, $customer_county_ship, $customer_postcode_ship, ''));
+		//Add items
+		// invoice product items
+		foreach ($_POST['invoice_product'] as $key => $value) {
+
+			$item_product = ($value);
+
+
+			// $item_description = $_POST['invoice_product_desc'][$key];
+			$item_qty = $_POST['invoice_product_qty'][$key];
+			$item_price = $_POST['invoice_product_price'][$key];
+			$item_discount = $_POST['invoice_product_discount'][$key];
+			$item_subtotal = $_POST['invoice_product_sub'][$key];
+
+			if (ENABLE_VAT == false) {
+				$item_vat = (VAT_RATE / 100) * $item_subtotal;
+			}
+
+			$invoice->addItem($item_product, '', $item_qty, $item_vat, $item_price, $item_discount, $item_subtotal);
+		}
+		//Add totals
+		$invoice->addTotal("Total", $invoice_subtotal);
+		if (!empty($invoice_discount)) {
+			$invoice->addTotal("Discount", $invoice_discount);
+		}
+		if (!empty($invoice_shipping)) {
+			$invoice->addTotal("Service charge", $invoice_shipping);
+		}
+		if (ENABLE_VAT == true) {
+			$invoice->addTotal("TAX/VAT " . VAT_RATE . "%", $invoice_vat);
+		}
+
+
+
+
+		$invoice->addTotal("Total Due", $invoice_total, true);
+		$invoice->addTotal("Cust.Paid", $customer_paying_cash, true);
+		$invoice->addTotal("Balance", $invoice_balance, true);
+
+
+
+		if (intval($invoice_balance) <= 0) {
+			$invoice_status = 'Paid'; //Add Badge
+				
+				$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+		
+	
+				$query_update_ = "UPDATE task_tracker_pharmacy  SET  `payment_status` = 'Payment Finished'  WHERE `id` = '$tranaction_id' ";
+				$results = $mysqli->query($query_update_);
+
+	
+	
+				$invoice->addBadge($invoice_status);
+				$invoice->SetTextColor(100, 0, 0);
+		}
+		else{
+			$invoice_status = 'Partial Paid'; //Add Badge
+				
+				$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+		
+	
+				$query_update_ = "UPDATE task_tracker_pharmacy  SET  `payment_status` = 'Partial Paid'  WHERE `id` = '$tranaction_id' ";
+				$results = $mysqli->query($query_update_);
+
+
+	
+	
+				$invoice->addBadge($invoice_status);
+				$invoice->SetTextColor(100, 0, 0);
+			}
+	
+
+
+		// Customer notes:
+		if (!empty($invoice_notes)) {
+			$invoice->addTitle("Customer Notes");
+			$invoice->addParagraph($invoice_notes);
+		}
+		//Add Title
+		$invoice->addTitle("Payment information");
+		//Add Paragraph
+		$invoice->addParagraph(PAYMENT_DETAILS);
+		//Set footer note
+		$invoice->setFooternote(FOOTER_NOTE);
+		//Render the PDF
+
+		$search = '/';
+		$replace = '_';
+		$subject = $invoice_number;
+
+		$invoice_number = str_replace($search, $replace, $subject);
+
+		$invoice->render('invoices/' . $invoice_number . '.pdf', 'F');
+
+		$link = 'invoices/' . $invoice_number . '.pdf';
+
+		$subject = trim($subject);
+
+
+	} else {
+		// if unable to create invoice
+		echo json_encode(array(
+			'status' => 'Error',
+			//'message' => 'There has been an error, please try again.'
+			// debug
+			//'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+		));
+	}
+
+	//close database connection
+	//$mysqli->close();
+
+}
+
+
+
+//function create_invoice_from_pharmacy_new()
+
+if($action == 'create_invoice_from_pharmacy_new')
+{
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+  // invoice customer information
+	// billing
+	$customer_name = addslashes($_POST['customer_name']); // customer name
+	$customer_email = addslashes($_POST['customer_town']); // customer email
+	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
+	$customer_address_2 = addslashes($_POST['customer_sex']); // customer address
+	$customer_town = addslashes($_POST['customer_town']); // customer town
+	$customer_county = ''; //addslashes($_POST['customer_town']); // customer county
+	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
+
+	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
+
+	$customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
+
+	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
+
+	 $customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
 	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
 	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
 	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
@@ -3913,7 +4528,7 @@ if($action == 'create_invoice_from_pharmacy_new')
 	$id = $_SESSION['login_user_id'];
 
 	// insert invoice into database
-	$query = "INSERT INTO invoices (
+	 $query = "INSERT INTO invoices (
 					invoice,
 					custom_email,
 					invoice_date, 
@@ -4150,15 +4765,13 @@ if($action == 'create_invoice_from_pharmacy_new')
 
 
 
-//create_invoice_from_invoice_from_pharmacy
-
-if ($action == 'create_invoice_from_invoice_from_pharmacy') {
-
+if ($action == 'create_invoice_from_invoice') {
 
 	// invoice customer information
 	// billing
 	$tranaction_id =  addslashes($_POST['transaction_id']);
 	$get_invoice_id = addslashes($_POST['get_invoice_id']);
+	//$unchanged = addslashes($_POST['unchanged']);
 	$customer_name = addslashes($_POST['customer_name']); // customer name
 	$customer_email = addslashes($_POST['customer_town']); // customer email
 	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
@@ -4166,14 +4779,10 @@ if ($action == 'create_invoice_from_invoice_from_pharmacy') {
 	$customer_town = addslashes($_POST['customer_town']); // customer town
 	$customer_county = ''; //addslashes($_POST['customer_town']); // customer county
 	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
-
-	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
-
-	$customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
-
-	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
-
-	$customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
+    $customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
+    $customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
+    //shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
+    $customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
 	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
 	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
 	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
@@ -4197,11 +4806,6 @@ if ($action == 'create_invoice_from_invoice_from_pharmacy') {
 
 	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
 
-	$invoice_balance = addslashes($_POST['invoice_bala']); // custom invoice balance
-	$customer_paying_cash = addslashes($_POST['invoice_patient_paying']); // custom invoice_patient_paying
-
-
-
 	//Date Invoice_due
 	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
 	$inv_date =  explode('/', $invoice_due_date);
@@ -4217,16 +4821,38 @@ if ($action == 'create_invoice_from_invoice_from_pharmacy') {
 	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
 	$invoice_type = addslashes($_POST['invoice_type']); // Invoice type
 	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
+	
+	
+	
+	// invoice details
+	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
+	$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
+
+	//Date Invoice 
+	$invoice_date = ($_POST['invoice_date']); // invoice date
+	$inv_date =  explode('/', $invoice_date);
+	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
+
+	$date = date_create($inv_date);
+	$invoice_date = date_format($date, "Y-m-d");
 
 
 
 
+	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
 
+	 $invoice_balance = addslashes($_POST['invoice_bala']); // custom invoice balance
+	
 
-	session_start();
+	$customer_paying_cash = addslashes($_POST['invoice_patient_paying']); // custom invoice_patient_paying
+	$invoice_which = 'Regular-invoice';
+	
+	
+
+		session_start();
 	$_SESSION['login_username'];
 	$id = $_SESSION['login_user_id'];
-	$invoice_which = 'Regular-Pharmacy';
+	//$invoice_which = 'Regular-Pharmacy';
 	// insert invoice into database
 	$query = "INSERT INTO invoices (
 					invoice,
@@ -4335,6 +4961,7 @@ if ($action == 'create_invoice_from_invoice_from_pharmacy') {
 		";
 	}
 
+	
 	$count = 1;
 	$query_balance = "INSERT INTO `balance_invoices`
 (        `invoice_id`,
@@ -4348,29 +4975,32 @@ if ($action == 'create_invoice_from_invoice_from_pharmacy') {
 	 VALUES (
 		'" . $invoice_number . "',
 	    '" . $invoice_total . "',
-		'" . $customer_paying_cash . "',
+		'" . $customer_paying_cash. "',
 		'" . $invoice_balance . "',
 		'" . $count . "',
 		Now(),
-		'Pharmacy',
+		'Laboratory',
 		'".$get_invoice_id."'
 	);
 ";
 	
 		
 $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-$results_ = $mysqli->query($query_balance);
+$results = $mysqli->query($query_balance);
 
 
 
-	header('Content-Type: application/json');
 
-	// execute the query
+
+header('Content-Type: application/json');
+// execute the query
+	
+	
+	
+	
 	if ($mysqli->multi_query($query)) {
-
-
-
-		//if saving success
+		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+		///if saving success
 		echo json_encode(array(
 			'status' => 'Success',
 			'message' => 'Invoice has been created successfully!',
@@ -4420,7 +5050,7 @@ $results_ = $mysqli->query($query_balance);
 
 
 			// $item_description = $_POST['invoice_product_desc'][$key];
-			$item_qty = $_POST['invoice_product_qty'][$key];
+			$item_qty =   $_POST['invoice_product_qty'][$key];
 			$item_price = $_POST['invoice_product_price'][$key];
 			$item_discount = $_POST['invoice_product_discount'][$key];
 			$item_subtotal = $_POST['invoice_product_sub'][$key];
@@ -4447,17 +5077,17 @@ $results_ = $mysqli->query($query_balance);
 		$invoice->addTotal("Cust.Paid", $customer_paying_cash, true);
 		$invoice->addTotal("Balance", $invoice_balance, true);
 
+        // echo $invoice_balance;
+        // exit;
 
-
-		if ($invoice_balance <= 0) {
+		if(  intval($invoice_balance) <= 0  ) {
 			$invoice_status = 'Paid'; //Add Badge
 				
 				$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
 				$query_update__ = "UPDATE invoices  SET  `status` = 'paid'  WHERE `invoice` = '$invoice_number' ";
 				$results_ = $mysqli->query($query_update__);
-	
-	
-				$query_update_ = "UPDATE task_tracker_pharmacy  SET  `payment_status` = 'Payment Finished'  WHERE `id` = '$tranaction_id' ";
+
+				$query_update_ = "UPDATE task_tracker  SET  `status` = 'Payment Finished'  WHERE `id` = '$tranaction_id' ";
 				$results = $mysqli->query($query_update_);
 	
 	
@@ -4469,15 +5099,15 @@ $results_ = $mysqli->query($query_balance);
 				
 				$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
 				$query_update__ = "UPDATE invoices  SET  `status` = 'paid'  WHERE `invoice` = '$invoice_number' ";
-				$results_ = $mysqli->query($query_update__);
-	
-	
-				$query_update_ = "UPDATE task_tracker_pharmacy  SET  `payment_status` = 'Partial Paid'  WHERE `id` = '$tranaction_id' ";
+
+				$query_update_ = "UPDATE task_tracker  SET  `status` = 'Partial Paid'  WHERE `id` = '$tranaction_id' ";
 				$results = $mysqli->query($query_update_);
 	
 	
 				$invoice->addBadge($invoice_status);
 				$invoice->SetTextColor(100, 0, 0);
+
+				 
 			}
 	
 
@@ -4508,7 +5138,7 @@ $results_ = $mysqli->query($query_balance);
 
 		// Connect to the database
 		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject',  `status`= 'Payment Finishied', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
+		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
 
 		$results = $mysqli->query($query_update);
 	} else {
@@ -4523,316 +5153,10 @@ $results_ = $mysqli->query($query_balance);
 
 	//close database connection
 	//$mysqli->close();
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-//create_invoice_from_invoice
-
-
-if ($action == 'create_invoice_from_invoice') {
-
-	// invoice customer information
-	// billing
-	$tranaction_id =  addslashes($_POST['transaction_id']);
-	$customer_name = addslashes($_POST['customer_name']); // customer name
-	$customer_email = addslashes($_POST['customer_town']); // customer email
-	$customer_address_1 = addslashes($_POST['customer_age']); // customer age
-	$customer_address_2 = addslashes($_POST['customer_sex']); // customer address
-	$customer_town = addslashes($_POST['customer_town']); // customer town
-	$customer_county = ''; //addslashes($_POST['customer_town']); // customer county
-	$customer_postcode = addslashes($_POST['customer_date_of_reg']); // customer postcode
-
-	$customer_company_name =  addslashes($_POST['customer_company_name']); // Company_name
-
-	$customer_phone = ''; // addslashes($_POST['customer_age']); // customer phone number
-
-	//shipping  //Changed to Dr/ Physician Information doctor_name doctor_email doctor_title
-
-	$customer_name_ship = addslashes($_POST['doctor_name']); // physician_full_name (shipping)
-	$customer_address_1_ship = addslashes($_POST['doctor_email']); // customer address (shipping)
-	$customer_address_2_ship = addslashes($_POST['doctor_title']); // customer address (shipping)
-	$customer_town_ship = ''; //addslashes($_POST['doctor_title']); // customer town (shipping)
-	$customer_county_ship = ''; //addslashes($_POST['doctor_title']); // customer county (shipping)
-	$customer_postcode_ship = ''; //addslashes($_POST['doctor_title']); // customer postcode (shipping)
-
-	// invoice details
-	$invoice_number = addslashes($_POST['invoice_id']); // invoice number
-	$custom_email = addslashes($_POST['custom_email']); // invoice custom email body
-
-	//Date Invoice 
-	$invoice_date = ($_POST['invoice_date']); // invoice date
-	$inv_date =  explode('/', $invoice_date);
-	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
-
-	$date = date_create($inv_date);
-	$invoice_date = date_format($date, "Y-m-d");
-
-
-
-
-	$custom_email = addslashes($_POST['custom_email']); // custom invoice email
-
-	//Date Invoice_due
-	$invoice_due_date = ($_POST['invoice_due_date']); // invoice due date
-	$inv_date =  explode('/', $invoice_due_date);
-	$inv_date = $inv_date[2] . "-" . $inv_date[1] . "-" . $inv_date[0];
-	$date = date_create($inv_date);
-	$invoice_due_date = date_format($date, "Y-m-d");
-
-	$invoice_subtotal = addslashes($_POST['invoice_subtotal']); // invoice sub-total
-	$invoice_shipping = addslashes($_POST['servicecharge']); // invoice shipping amount
-	$invoice_discount = addslashes($_POST['invoice_discount']); // invoice discount
-	//$invoice_vat = $_POST['invoice_vat']; // invoice vat
-	$invoice_total = addslashes($_POST['invoice_total']); // invoice total
-	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
-	$invoice_type = addslashes($_POST['invoice_type']); // Invoice type
-	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
-
-	session_start();
-	$_SESSION['login_username'];
-	$id = $_SESSION['login_user_id'];
-
-	// insert invoice into database
-	$query = "INSERT INTO invoices (
-					invoice,
-					custom_email,
-					invoice_date, 
-					invoice_due_date, 
-					subtotal, 
-					shipping, 
-					discount, 
-					vat, 
-					total,
-					notes,
-					invoice_type,
-					invoice_registration,
-					invoice_intially_created_by,
-					status
-				) VALUES (
-				  	'" . $invoice_number . "',
-				  	'" . $custom_email . "',
-				  	'" . $invoice_date . "',
-				  	'" . $invoice_due_date . "',
-				  	'" . $invoice_subtotal . "',
-				  	'" . $invoice_shipping . "',
-				  	'" . $invoice_discount . "',
-				  	'0',
-				  	'" . $invoice_total . "',
-				  	'" . $invoice_notes . "',
-				  	'" . $invoice_type . "',
-					'new',
-					'" . $id . "',
-				  	'" . $invoice_status . "'
-			    );
-			";
-
-
-	// insert customer details into database
-	$query .= "INSERT INTO customers (
-					invoice,
-					name,
-					email,
-					address_1,
-					address_2,
-					town,
-					county,
-					postcode,
-					phone,
-					name_ship,
-					address_1_ship,
-					address_2_ship,
-					town_ship,
-					county_ship,
-					postcode_ship,
-					company_name
-				) VALUES (
-					'" . $invoice_number . "',
-					'" . $customer_name . "',
-					'" . $customer_email . "',
-					'" . $customer_address_1 . "',
-					'" . $customer_address_2 . "',
-					'" . $customer_town . "',
-					'" . $customer_county . "',
-					'" . $customer_postcode . "',
-					'" . $customer_phone . "',
-					'" . $customer_name_ship . "',
-					'" . $customer_address_1_ship . "',
-					'" . $customer_address_2_ship . "',
-					'" . $customer_town_ship . "',
-					'" . $customer_county_ship . "',
-					'" . $customer_postcode_ship . "',
-					'" . $customer_company_name . "'
-				);
-			";
-
-
-	// invoice product items
-	foreach ($_POST['invoice_product'] as $key => $value) {
-		//$item_product = addslashes($value);
-
-
-		$item_product = str_replace("'", '', $value);
-
-		// $item_description = $_POST['invoice_product_desc'][$key];
-		$item_qty = addslashes($_POST['invoice_product_qty'][$key]);
-		$item_price = addslashes($_POST['invoice_product_price'][$key]);
-		$item_discount = addslashes($_POST['invoice_product_discount'][$key]);
-		$item_subtotal = addslashes($_POST['invoice_product_sub'][$key]);
-
-		// insert invoice items into database
-		$query .= "INSERT INTO invoice_items (
-				invoice,
-				product,
-				qty,
-				price,
-				discount,
-				subtotal
-			) VALUES (
-				'" . $invoice_number . "',
-				'" . $item_product . "',
-				'" . $item_qty . "',
-				'" . $item_price . "',
-				'" . $item_discount . "',
-				'" . $item_subtotal . "'
-			);
-		";
+	
 	}
 
-	header('Content-Type: application/json');
 
-	// execute the query
-	if ($mysqli->multi_query($query)) {
-		//if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message' => 'Invoice has been created successfully!',
-			'invoice_type' => $invoice_type
-		));
-
-		//Set default date timezone
-		date_default_timezone_set(TIMEZONE);
-		//Include Invoicr class
-		include('invoice.php');
-		//Create a new instance
-		$invoice = new invoicr("A4", CURRENCY, "en");
-		//Set number formatting
-		$invoice->setNumberFormat('.', ',');
-		//Set your logo
-		$invoice->setLogo(COMPANY_LOGO, COMPANY_LOGO_WIDTH, COMPANY_LOGO_HEIGHT);
-		//Set theme color
-		$invoice->setColor(INVOICE_THEME);
-		//Set type
-		$invoice->setType($invoice_type);
-		//Set reference
-		$invoice->setReference($invoice_number);
-		//Set date
-		$invoice->setDate($invoice_date);
-		//Set due date
-		$invoice->setDue($invoice_due_date);
-		//Set from
-
-		@$invoice->setFrom(array(COMPANY_NAME, COMPANY_ADDRESS_1, COMPANY_ADDRESS_2, COMPANY_COUNTY, COMPANY_POSTCODE, COMPANY_NAME_, COMPANY_NUMBER, COMPANY_NUMBER2));
-
-
-		//Set to
-		@$invoice->setTo(array($customer_name, $customer_address_1, $customer_address_2, $customer_town, $customer_county, $customer_postcode, $customer_company_name, "Phone: " . $customer_phone));
-
-
-
-		//Ship to
-		@$invoice->shipTo(array($customer_name_ship, $customer_address_1_ship, $customer_address_2_ship, $customer_town_ship, $customer_county_ship, $customer_postcode_ship, ''));
-		//Add items
-		// invoice product items
-		foreach ($_POST['invoice_product'] as $key => $value) {
-
-			$item_product = ($value);
-
-
-			// $item_description = $_POST['invoice_product_desc'][$key];
-			$item_qty = $_POST['invoice_product_qty'][$key];
-			$item_price = $_POST['invoice_product_price'][$key];
-			$item_discount = $_POST['invoice_product_discount'][$key];
-			$item_subtotal = $_POST['invoice_product_sub'][$key];
-
-			if (ENABLE_VAT == false) {
-				$item_vat = (VAT_RATE / 100) * $item_subtotal;
-			}
-
-			$invoice->addItem($item_product, '', $item_qty, $item_vat, $item_price, $item_discount, $item_subtotal);
-		}
-		//Add totals
-		$invoice->addTotal("Total", $invoice_subtotal);
-		if (!empty($invoice_discount)) {
-			$invoice->addTotal("Discount", $invoice_discount);
-		}
-		if (!empty($invoice_shipping)) {
-			$invoice->addTotal("Service charge", $invoice_shipping);
-		}
-		if (ENABLE_VAT == true) {
-			$invoice->addTotal("TAX/VAT " . VAT_RATE . "%", $invoice_vat);
-		}
-		$invoice->addTotal("Total Due", $invoice_total, true);
-
-
-		//Add Badge
-		$invoice->addBadge($invoice_status);
-		$invoice->SetTextColor(204, 0, 0);
-
-		// Customer notes:
-		if (!empty($invoice_notes)) {
-			$invoice->addTitle("Customer Notes");
-			$invoice->addParagraph($invoice_notes);
-		}
-		//Add Title
-		$invoice->addTitle("Payment information");
-		//Add Paragraph
-		$invoice->addParagraph(PAYMENT_DETAILS);
-		//Set footer note
-		$invoice->setFooternote(FOOTER_NOTE);
-		//Render the PDF
-
-		$search = '/';
-		$replace = '_';
-		$subject = $invoice_number;
-
-		$invoice_number = str_replace($search, $replace, $subject);
-
-		$invoice->render('invoices/' . $invoice_number . '.pdf', 'F');
-
-		$link = 'invoices/' . $invoice_number . '.pdf';
-
-		$subject = trim($subject);
-
-		// Connect to the database
-		$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-		$query_update = "UPDATE task_tracker SET  `cashier_task_invoice_status` = 1 , `cashier_task_invoice_id` = '$subject',  `status`= 'Payment Finishied', `cashier_invoice_download_link` = '$link'  WHERE `id` = '$tranaction_id' ";
-
-		$results = $mysqli->query($query_update);
-	} else {
-		// if unable to create invoice
-		echo json_encode(array(
-			'status' => 'Error',
-			//'message' => 'There has been an error, please try again.'
-			// debug
-			//'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-		));
-	}
-
-	//close database connection
-	//$mysqli->close();
-
-}
 
 
 
@@ -5275,6 +5599,7 @@ if ($action == 'create_invoice') {
 	$invoice_notes = addslashes($_POST['invoice_notes']); // Invoice notes
 	$invoice_type = addslashes($_POST['invoice_type']); // Invoice type
 	$invoice_status = addslashes($_POST['invoice_status']); // Invoice status
+	$invoice_which = 'Regular-invoice';
 
 	session_start();
 	$_SESSION['login_username'];
@@ -5295,6 +5620,7 @@ if ($action == 'create_invoice') {
 					invoice_type,
 					invoice_registration,
 					invoice_intially_created_by,
+					invoice_which,
 					status
 				) VALUES (
 				  	'" . $invoice_number . "',
@@ -5310,6 +5636,7 @@ if ($action == 'create_invoice') {
 				  	'" . $invoice_type . "',
 					'new',
 					'" . $id . "',
+					'".$invoice_which."',
 				  	'" . $invoice_status . "'
 			    );
 			";
@@ -6180,6 +6507,7 @@ if ($action == 'retrieve_tranaction_data_pharmacy') {
 
 		$pname = $row['cname'];
 		$invid = $row['tidn'];
+		$status_submission = $row['tstatus']; 
 	}
 
 
@@ -6198,7 +6526,9 @@ if ($action == 'retrieve_tranaction_data_pharmacy') {
 		'invoice_type' => 'Done',
 		'data_returned' => $return_data,
 		'pname' => $pname,
-		'invid' => $invid
+		'invid' => $invid,
+		'Status_submission' => $status_submission
+
 
 	));
 }
@@ -6505,6 +6835,8 @@ if ($action == 'add_user') {
 
 	@$create_invoice  = trim($_POST['create_invoice']); //2  
 	@$download_csv  =   trim($_POST['download_csv']); //3
+	//@$download_csv_p  =   trim($_POST['download_csv-p']); //
+
 	@$manage_invoice =  trim($_POST['manage_invoice']); //4
 
 	@$Add_Procedure =    trim($_POST['Add_Procedure']); //5
@@ -6531,7 +6863,31 @@ if ($action == 'add_user') {
 
 
 
-	@$Users_Permission = $dashboard . "," . $create_invoice . "," . $manage_invoice . "," . $download_csv . "," . $Add_Procedure . "," . $manage_procedure . "," . $edit_procedure . "," . $Add_patient . "," . $manage_patient . "," . $Edit_patient . "," . $Add_doctor . "," . $manage_doctor . "," . $Edit_doctor . "," . $Add_users . "," . $manage_users . "," . $edit_users . "," . $delete_invoice . "," . $delete_procedure . "," . $delete_patient . "," . $delete_doctor . "," . $delete_users;
+	@$delete_invoice = trim($_POST['delete_invoice']); //22
+	@$delete_procedure = trim($_POST['delete_procedure']); //23
+	@$delete_patient = trim($_POST['delete_patient']); //24
+	@$delete_doctor = trim($_POST['delete_doctor']); //25
+	@$delete_users = trim($_POST['delete_users']); //26
+	@$delete_invoice = trim($_POST['delete_invoice']); //27
+	@$delete_procedure = trim($_POST['delete_procedure']); //28
+	@$delete_patient = trim($_POST['delete_patient']); //29
+	@$delete_doctor = trim($_POST['delete_doctor']); //30
+
+
+	$todays_receipts =  trim($_POST['todays_receipts']); //22
+	$request_from_dr = trim($_POST['request_from_dr']); //23
+    @$Request_from_Dr = trim($_POST['Request_from_Dr']); //26
+	@$Today_Request_from_Dr =  trim($_POST['Today_Request_from_Dr']); //25
+	@$Send_inquiries = trim($_POST['Send_inquiries']); //24
+	@$manufacturers = trim($_POST['manufacturers']); //27
+	@$Categories = trim($_POST['Categories']); //28
+	@$Medicines = trim($_POST['Medicines']); //29
+	@$PInvoices = trim($_POST['PInvoices']); //30
+
+
+	//@$Users_Permission = $dashboard . "," . $create_invoice . "," . $manage_invoice . "," . $download_csv . "," . $Add_Procedure . "," . $manage_procedure . ", " . $edit_procedure . "," . $Add_patient . "," . $manage_patient . "," . $Edit_patient . "," . $Add_doctor . ", " . $manage_doctor . "," . $Edit_doctor . "," . $Add_users . ", " . $manage_users . "," . $edit_users . "," . $delete_invoice . "," . $delete_procedure . "," . $delete_patient . "," . $delete_doctor . "," . $delete_users. "," . $Request_from_Dr. "," . $Today_Request_from_Dr. "," . $Send_inquiries. "," . $manufacturers. "," . $Categories. "," . $Medicines. "," . $PInvoices;
+	@$Users_Permission = $dashboard . "," . $create_invoice . "," . $manage_invoice . "," . $download_csv . "," . $Add_Procedure . "," . $manage_procedure . ", " . $edit_procedure . "," . $Add_patient . "," . $manage_patient . "," . $Edit_patient . "," . $Add_doctor . ", " . $manage_doctor . "," . $Edit_doctor . "," . $Add_users . ", " . $manage_users . "," . $edit_users . "," . $delete_invoice . "," . $delete_procedure . "," . $delete_patient . "," . $delete_doctor . "," . $delete_users. "," . $Request_from_Dr. ", " . $Today_Request_from_Dr. ", ".$todays_receipts.", ".$request_from_dr.", " . $Send_inquiries. "," . $manufacturers. "," . $Categories. "," . $Medicines. "," . $PInvoices;
+
 
 	//our insert query query
 	$query  = "INSERT INTO users
@@ -6633,10 +6989,22 @@ if ($action == 'update_user') {
 	@$delete_doctor = trim($_POST['delete_doctor']); //20
 	@$delete_users = trim($_POST['delete_users']); //21
 
+	$todays_receipts =  trim($_POST['todays_receipts']); //22
+	$request_from_dr = trim($_POST['request_from_dr']); //23
+	@$Send_inquiries = trim($_POST['Send_inquiries']); //24
+	@$Today_Request_from_Dr =  trim($_POST['Today_Request_from_Dr']); //25
+	@$Request_from_Dr = trim($_POST['Request_from_Dr']); //26
+    @$manufacturers = trim($_POST['manufacturers']); //27
+	@$Categories = trim($_POST['Categories']); //28
+	@$Medicines = trim($_POST['Medicines']); //29
+	@$PInvoices = trim($_POST['PInvoices']); //30
 
 
-	@$Users_Permission = $dashboard . "," . $create_invoice . "," . $manage_invoice . "," . $download_csv . "," . $Add_Procedure . "," . $manage_procedure . "," . $edit_procedure . "," . $Add_patient . "," . $manage_patient . "," . $Edit_patient . "," . $Add_doctor . "," . $manage_doctor . "," . $Edit_doctor . "," . $Add_users . "," . $manage_users . "," . $edit_users . "," . $delete_invoice . "," . $delete_procedure . "," . $delete_patient . "," . $delete_doctor . "," . $delete_users;
 
+
+
+
+	 @$Users_Permission = $dashboard . "," . $create_invoice . "," . $manage_invoice . "," . $download_csv . "," . $Add_Procedure . "," . $manage_procedure . ", " . $edit_procedure . "," . $Add_patient . "," . $manage_patient . "," . $Edit_patient . "," . $Add_doctor . ", " . $manage_doctor . "," . $Edit_doctor . "," . $Add_users . ", " . $manage_users . "," . $edit_users . "," . $delete_invoice . "," . $delete_procedure . "," . $delete_patient . "," . $delete_doctor . "," . $delete_users. "," . $Request_from_Dr. ", " . $Today_Request_from_Dr. ", ".$todays_receipts.", ".$request_from_dr.", " . $Send_inquiries. "," . $manufacturers. "," . $Categories. "," . $Medicines. "," . $PInvoices;
 
 	if ($password == '') {
 		// the query

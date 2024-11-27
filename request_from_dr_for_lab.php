@@ -12,7 +12,7 @@ for($i =0; $i <= count($explode_comma_separated); $i++)
 @array_push($user_permission,$explode_comma_separated[$i]);
 }
 
-  if( $_SESSION['user_type'] == 'Labaratory' || $_SESSION['user_type'] == 'Admin' ) {
+  if( in_array('26', $user_permission) || $_SESSION['user_type'] == 'Admin' ) {
 
     ?>
 
