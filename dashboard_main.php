@@ -288,7 +288,7 @@
 
     $currentDate = date('Y-m-d');
 
-   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' and invoice_which <> 'Regular-Pharmacy')  ";
     $query = $mysqli->query($sql);
 
     @$row = mysqli_fetch_assoc($query);
