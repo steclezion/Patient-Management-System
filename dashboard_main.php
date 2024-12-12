@@ -169,7 +169,10 @@
 
     $currentDate = date('Y-m-d');
 
-   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+  //  $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+  //   $query = $mysqli->query($sql);
+
+    $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' and invoice_which <> 'Regular-Pharmacy')  ";
     $query = $mysqli->query($sql);
 
     @$row = mysqli_fetch_assoc($query);
@@ -207,8 +210,12 @@
 
     $currentDate = date('Y-m-d');
 
-   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+  //  $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' ) ";
+  //   $query = $mysqli->query($sql);
+
+    $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' and invoice_which <> 'Regular-Pharmacy')  ";
     $query = $mysqli->query($sql);
+
 
     @$row = mysqli_fetch_assoc($query);
     $sum = $row['Total_sales'];
@@ -288,13 +295,23 @@
 
     $currentDate = date('Y-m-d');
 
-   $sql = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' and invoice_which <> 'Regular-Pharmacy')  ";
+   $sql = "SELECT  SUM(patient_paid) AS Total_sales , SUM(remained_balance) AS Remained_Balance
+		from invoices i
+         Join balance_invoices b
+		ON b.invoice_id = i.invoice
+        WHERE (b.invoice_type <> 'Laboratory' and invoice_date = '".$currentDate."')
+        Group by b.invoice_id
+		ORDER BY i.invoice ASC ";
+
     $query = $mysqli->query($sql);
 
-    @$row = mysqli_fetch_assoc($query);
-    $sum = $row['Total_sales'];
 
-    echo  number_format($sum)."\n";
+
+    @$row = mysqli_fetch_assoc($query);
+    @$Total_Sales = $row['Total_sales'];
+    @$Partial_Paid = $row['Remained_Balance'];
+
+    echo  number_format($Total_Sales)."\n";
 
     ?></h3>
 
@@ -309,6 +326,113 @@
 
 
         </div>
+
+
+
+
+
+
+
+
+
+
+        <div class="col-lg-3 col-xs-6">
+          
+          <!-- small box -->
+          <div class="small-box bg-green-gradient">
+            <div class="inner">
+            <h3><?php
+
+
+
+
+       $Today = date('y/m/d');
+       $new = date('Y', strtotime($Today));
+
+    $currentDate = date('Y-m-d');
+
+   $sql = "SELECT  SUM(patient_paid) AS Total_sales , SUM(remained_balance) AS Remained_Balance
+		from invoices i
+         Join balance_invoices b
+		ON b.invoice_id = i.invoice
+        WHERE (b.invoice_type <> 'Laboratory' and invoice_date = '".$currentDate."')
+        Group by b.invoice_id
+		ORDER BY i.invoice ASC ";
+
+    $query = $mysqli->query($sql);
+
+
+
+    @$row = mysqli_fetch_assoc($query);
+    @$Total_Sales = $row['Total_sales'];
+    @$Partial_Paid = $row['Remained_Balance'];
+
+    echo  number_format($Partial_Paid)."\n";
+
+    ?></h3>
+
+              <p>Partial Payment Invoice - Pharmacy </p>
+
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+
+            </div>
+
+
+        </div>
+
+
+
+
+        <div class="col-lg-3 col-xs-6">
+          
+          <!-- small box -->
+          <div class="small-box bg-red-gradient">
+            <div class="inner">
+            <h3><?php
+
+
+
+
+       $Today = date('y/m/d');
+       $new = date('Y', strtotime($Today));
+
+    $currentDate = date('Y-m-d');
+
+
+
+
+$sqll = "SELECT SUM(total) AS Total_sales FROM invoices where ( invoice_date = '".$currentDate."' and invoice_which <> 'Regular-Pharmacy')  ";
+$queryl = $mysqli->query($sqll);
+@$rowl = mysqli_fetch_assoc($queryl);
+$suml = $rowl['Total_sales'];
+
+
+$sql = "SELECT  SUM(patient_paid) AS Total_sales , SUM(remained_balance) AS Remained_Balance from invoices i Join balance_invoices b ON b.invoice_id = i.invoice WHERE (b.invoice_type <> 'Laboratory' and invoice_date = '".$currentDate."') Group by b.invoice_id ORDER BY i.invoice ASC ";
+$query = $mysqli->query($sql);
+@$row = mysqli_fetch_assoc($query);
+@$Total_Sales = $row['Total_sales'];
+@$Partial_Paid = $row['Remained_Balance'];
+
+echo  number_format($suml + $Total_Sales + $Partial_Paid)."\n";
+
+    ?></h3>
+
+              <p>Total Payment Labaratory + Consultation + Pharmacy + Partial Payment </p>
+
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-apps"></i>
+            </div>
+
+            </div>
+
+
+        </div>
+
+
 
         
       </div>
