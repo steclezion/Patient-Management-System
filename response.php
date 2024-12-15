@@ -4882,7 +4882,7 @@ if ($action == 'create_invoice_from_invoice') {
 				  	'" . $invoice_total . "',
 				  	'" . $invoice_notes . "',
 				  	'" . $invoice_type . "',
-					'new',
+					'Lab',
 					'" . $id . "',
 					'" . $invoice_which . "',
 				  	'" . $invoice_status . "'

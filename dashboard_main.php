@@ -220,7 +220,7 @@
     @$row = mysqli_fetch_assoc($query);
     $sum = $row['Total_sales'];
 
-    echo  number_format($sum)."\n";
+    echo  number_format(0)."\n";
 
     ?></h3>
 
@@ -262,7 +262,7 @@
     @$row = mysqli_fetch_assoc($query);
     $sum = $row['Total_sales'];
 
-    echo  number_format($sum)."\n";
+    echo  number_format(0)."\n";
 
     ?></h3>
 
@@ -305,17 +305,26 @@
 
     $query = $mysqli->query($sql);
 
+    $add_value_ = 0;
+
+    while($query_selection_row =$query->fetch_assoc())
+    {
+
+     $add_value_ += $query_selection_row['Total_sales'];
+
+    }
+
 
 
     @$row = mysqli_fetch_assoc($query);
     @$Total_Sales = $row['Total_sales'];
     @$Partial_Paid = $row['Remained_Balance'];
 
-    echo  number_format($Total_Sales)."\n";
+    echo  number_format($add_value_)."\n";
 
     ?></h3>
 
-              <p>Total Invoice - Pharmacy </p>
+              <p>Today Total Invoice - Pharmacy </p>
 
             </div>
             <div class="icon">
@@ -386,7 +395,7 @@
   echo  number_format($add_value)."\n";
 ?></h3>
 
-              <p>Total Partial Payment Invoice - Pharmacy </p>
+              <p>Total Unpaid Payment Invoice - Pharmacy </p>
 
             </div>
             <div class="icon">
@@ -415,17 +424,11 @@
        $Today = date('y/m/d');
        $new = date('Y', strtotime($Today));
        $currentDate = date('Y-m-d');
-       $sql = "SELECT  SUM(patient_paid) AS Total_sales , SUM(remained_balance) AS Remained_Balance from invoices i Join balance_invoices b
-		   ON b.invoice_id = i.invoice WHERE (b.invoice_type <> 'Laboratory' and invoice_date = '".$currentDate."') Group by b.invoice_id ORDER BY i.invoice ASC ";
-       $query = $mysqli->query($sql);
-       @$row = mysqli_fetch_assoc($query);
-       @$Total_Sales = $row['Total_sales'];
-       @$Partial_Paid = $row['Remained_Balance'];
-  //  echo  number_format($Partial_Paid)."\n";
+
     $invoice_array = array(); 
     $add_value =0;
 
-    $select_distict_old_id = "select distinct old_invoice_id from balance_invoices where ( invoice_type='Pharmacy' and Timestamp = '".$currentDate."')  order by  old_invoice_id ASC"; 
+    $select_distict_old_id = "select distinct old_invoice_id from balance_invoices where ( invoice_type='Pharmacy' and Timestamp like '".$currentDate."%')  order by  old_invoice_id ASC"; 
     @$query_select_distict_old_id = $mysqli->query($select_distict_old_id);
 
     while($query_selection = $query_select_distict_old_id->fetch_assoc())
@@ -440,18 +443,20 @@
     for($i=0; $i < $count_invoice ; $i++)
     {
       @$check= $invoice_array[$i];
-      $select_distict_remained_balance = "select * from balance_invoices where (old_invoice_id = '$check' and invoice_type='Pharmacy') order by id DESC limit 1"; 
+     $select_distict_remained_balance = "select * from balance_invoices where (old_invoice_id = '$check' and invoice_type='Pharmacy' and Timestamp like '".$currentDate."%') order by id DESC limit 1"; 
       $query_select_distict_remained_balance = $mysqli->query($select_distict_remained_balance);
       $balance_table = $query_select_distict_remained_balance->fetch_assoc();
+
       if($balance_table['remained_balance'] != 0 ) {
         $add_value += $balance_table['remained_balance'];
       }
     }
 
   echo  number_format($add_value)."\n";
+
 ?></h3>
 
-              <p>Today Partial Payment Invoice - Pharmacy </p>
+              <p>Today Unpaid Payment Invoice - Pharmacy </p>
 
             </div>
             <div class="icon">
