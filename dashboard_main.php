@@ -177,7 +177,7 @@
 
     @$row = mysqli_fetch_assoc($query);
     $sum = $row['Total_sales'];
-
+   $total_daily_Sales = $sum;
     echo  number_format($sum)."\n";
 
     ?></h3>
@@ -421,10 +421,11 @@
             <div class="inner">
             <h3>
               <?php
+     date_default_timezone_set('Africa/Juba');
+     //date_default_timezone_set('America/Los_Angeles');  
        $Today = date('y/m/d');
        $new = date('Y', strtotime($Today));
-       $currentDate = date('Y-m-d');
-
+        $currentDate = date('Y-m-d');
     $invoice_array = array(); 
     $add_value =0;
 
@@ -501,7 +502,7 @@ $query = $mysqli->query($sql);
 @$Total_Sales = $row['Total_sales'];
 @$Partial_Paid = $row['Remained_Balance'];
 
-echo  number_format($suml + $Total_Sales )."\n";
+echo  number_format( $total_daily_Sales + $add_value_ )."\n";
 
     ?></h3>
 
